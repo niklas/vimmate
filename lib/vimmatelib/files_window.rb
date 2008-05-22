@@ -400,37 +400,19 @@ module VimMate
       @file_tree.add_refresh_signal do |method, file|
         case method
         when :add
-          # A file is added. Find it's parent and add it there
-          if file.parent and prow = file.parent.row
-            add_to_tree(file, prow)
-          else
-            add_to_tree(file)
-          end
+          add_to_tree(file)
         when :remove
-          # A file is removed. Find it and remove it
-          to_remove = []
-          if iter = file.row
-            to_remove << iter
-            if iter.next! and iter[TYPE] == TYPE_SEPARATOR
-              to_remove << iter
-            end
-          end
-          to_remove.each do |iter|
-            @gtk_tree_store.remove(iter)
-          end
+          remove_file_from_tree(file)
         when :refresh
-          # Called when the status of the file has changed
-          if iter = file.row
-            iter[ICON] = file.icon
-            iter[STATUS] = file.status_text if Config[:files_show_status]
-          end
+          refresh_row_for(file)
         end
         @gtk_filtered_tree_model.refilter
       end
     end
 
     # Add a file to the tree
-    def add_to_tree(file, parent = nil)
+    def add_to_tree(file)
+      parent = file.parent ? file.parent.row : nil
       # If we need a separator and it's a directory, we add it
       if Config[:file_directory_separator] and file.instance_of? ListedDirectory
         new_row = @gtk_tree_store.append(parent)
@@ -450,6 +432,28 @@ module VimMate
       else
         new_row[SORT] = "2-#{file.path}-1"
         new_row[TYPE] = TYPE_FILE
+      end
+    end
+
+    # A file is removed. Find it and remove it
+    def remove_file_from_tree(file)
+      to_remove = []
+      if iter = file.row
+        to_remove << iter
+        if iter.next! and iter[TYPE] == TYPE_SEPARATOR
+          to_remove << iter
+        end
+      end
+      to_remove.each do |iter|
+        @gtk_tree_store.remove(iter)
+      end
+    end
+
+    # Called when the status of the file has changed
+    def refresh_row_for(file)
+      if iter = file.row
+        iter[ICON] = file.icon
+        iter[STATUS] = file.status_text if Config[:files_show_status]
       end
     end
   end
