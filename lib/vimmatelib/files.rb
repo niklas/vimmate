@@ -30,6 +30,7 @@ module VimMate
   # A file within the tree
   class ListedFile
     attr_reader :name, :path, :parent
+    attr_accessor :row
 
     # Create a ListedFile from a path and an optional parent. A block
     # must be passed so it can be called to signal changes.

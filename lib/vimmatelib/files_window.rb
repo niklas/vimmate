@@ -401,39 +401,28 @@ module VimMate
         case method
         when :add
           # A file is added. Find it's parent and add it there
-          if file.parent
-            @gtk_tree_store.each do |model,path,iter|
-              if iter[PATH] == file.parent.path
-                add_to_tree(file, iter)
-                break
-              end
-            end
+          if file.parent and prow = file.parent.row
+            add_to_tree(file, prow)
           else
             add_to_tree(file)
           end
         when :remove
           # A file is removed. Find it and remove it
           to_remove = []
-          @gtk_tree_store.each do |model,path,iter|
-            if iter[PATH] == file.path
-              to_remove << Gtk::TreeRowReference.new(model, path)
-              if iter.next! and iter[TYPE] == TYPE_SEPARATOR
-                to_remove << Gtk::TreeRowReference.new(model, path.next!)
-              end
-              break
+          if iter = file.row
+            to_remove << iter
+            if iter.next! and iter[TYPE] == TYPE_SEPARATOR
+              to_remove << iter
             end
           end
-          to_remove.each do |element|
-            @gtk_tree_store.remove(@gtk_tree_store.get_iter(element.path))
+          to_remove.each do |iter|
+            @gtk_tree_store.remove(iter)
           end
         when :refresh
           # Called when the status of the file has changed
-          @gtk_tree_store.each do |model,path,iter|
-            if iter[PATH] == file.path
-              iter[ICON] = file.icon
-              iter[STATUS] = file.status_text if Config[:files_show_status]
-              break
-            end
+          if iter = file.row
+            iter[ICON] = file.icon
+            iter[STATUS] = file.status_text if Config[:files_show_status]
           end
         end
         @gtk_filtered_tree_model.refilter
@@ -454,6 +443,7 @@ module VimMate
       new_row[PATH] = file.path
       new_row[ICON] = file.icon
       new_row[STATUS] = file.status_text if Config[:files_show_status]
+      file.row = new_row # so will find it later fast
       if file.instance_of? ListedDirectory
         new_row[SORT] = "1-#{file.path}-1"
         new_row[TYPE] = TYPE_DIRECTORY
