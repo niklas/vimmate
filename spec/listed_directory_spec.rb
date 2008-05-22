@@ -2,14 +2,15 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 describe ListedDirectory do
   before(:each) do
-    @files_count = 5
+    @files_count = 6
     @path = File.dirname(__FILE__)
 
     @mock_tree_signal = mock("Tree")
     @mock_block = lambda do |*args|
       @mock_tree_signal.call(*args)
     end
-    @mock_tree_signal.should_receive(:call).with(:add,anything()).at_least(1+@files_count).times
+    @mock_tree_signal.should_receive(:call).with(:add,be_instance_of(ListedDirectory)).once.ordered
+    @mock_tree_signal.should_receive(:call).with(:add,be_instance_of(ListedFile)).at_least(@files_count).times.ordered
 
     @dir = ListedDirectory.new(@path,[],&@mock_block)
   end
