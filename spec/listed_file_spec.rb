@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 describe ListedFile do
   before(:each) do
-    @path = __FILE__
+    @path = File.expand_path(__FILE__)
     @mock_tree_signal = lambda do
       #noop
     end
