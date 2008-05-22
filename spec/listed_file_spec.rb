@@ -2,11 +2,11 @@ require File.dirname(__FILE__) + '/spec_helper'
 
 describe ListedFile do
   before(:each) do
-    @filepath = __FILE__
+    @path = __FILE__
     @mock_tree_signal = lambda do
-      puts "Called mock_tree_signal"
+      #noop
     end
-    @file = ListedFile.new(__FILE__,nil,&@mock_tree_signal)
+    @file = ListedFile.new(@path,nil,&@mock_tree_signal)
   end
   it "should be a listed file" do
     @file.should be_instance_of(ListedFile)
