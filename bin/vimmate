@@ -1,0 +1,187 @@
+#!/usr/bin/env ruby
+=begin
+= VimMate: Vim graphical add-on
+Copyright (c) 2006 Guillaume Benny
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+=end
+
+
+#
+# VimMate is a graphical add-on to Vim that was written and
+# is Copyright (C) 2006 Guillaume Benny
+#
+module VimMate
+end
+
+# Find the lib directory based on the path of this file
+lib_dir = File.join(File.dirname(File.expand_path($0)), "../lib")
+vimmate_lib_dir = File.join(lib_dir, "vimmatelib")
+# Add the lib directory in Ruby's search path
+if File.directory? vimmate_lib_dir
+  $:.unshift(lib_dir)
+end
+
+require 'rubygems'
+
+# Require the version
+require 'vimmatelib/version'
+
+# Parse the command line arguments
+require 'optparse'
+exclude_file_list = []
+OptionParser.new do |opts|
+  opts.banner = "Usage: #{File.basename($0)} [options] [files or directories]"
+
+  opts.separator ""
+  opts.separator "VimMate #{VimMate::VERSION}: Vim graphical add-on"
+  opts.separator "Copyright (C) 2006 Guillaume Benny"
+  opts.separator ""
+  opts.separator "If files or directories are omitted, the current directory is shown"
+
+  opts.on("-x",
+          "--exclude file1,file2,file3",
+          Array,
+          "Comma separated list of files or directory to exclude.") do |file_list|
+    exclude_file_list = file_list
+  end
+
+  opts.on_tail("-h", "--help", "Show this help screen") do |string|
+    puts opts
+    exit
+  end
+end.parse!
+
+require 'vimmatelib/requirer'
+
+VimMate::Requirer.require_exit('gtk2')
+
+# We fork to give back the shell to the user, like Vim
+fork do
+  require 'vimmatelib/config'
+  require 'vimmatelib/dummy_window'
+  require 'vimmatelib/files_menu'
+  require 'vimmatelib/files_window'
+  require 'vimmatelib/main_window'
+  require 'vimmatelib/vim_window'
+
+  # Create the main objects
+  main = VimMate::MainWindow.new
+  files = VimMate::FilesWindow.new(exclude_file_list)
+  vim = VimMate::VimWindow.new
+  menu = VimMate::FilesMenu.new(main)
+  
+  terminals = VimMate::Requirer.require_if('vimmatelib/terminals_window', VimMate::DummyWindow.new) do
+    VimMate::TerminalsWindow.new
+  end
+
+  main.files_window = files if files
+  main.vim_window = vim if vim
+  if not terminals.nil? and not terminals.is_a?(VimMate::DummyWindow)
+    main.terminals_window = terminals
+  end
+
+  # Set the signals for the file list
+  files.add_open_signal do |path, kind|
+    vim.open(path, kind)
+  end
+  files.add_menu_signal do |path|
+    menu.open(path)
+  end
+
+  # Set the signals for the file menu
+  menu.add_open_signal do |path, kind|
+    vim.open(path, kind)
+  end
+  menu.add_refresh_signal do
+    files.refresh
+  end
+
+  # When there are no files, add the current directory to the file list.
+  # If files are specified on the command line, use them
+  files.initial_add do
+    if ARGV.empty?
+      files.add_path(File.expand_path('.'))
+      files.expand_first_row
+    else
+      ARGV.each do |file|
+        files.add_path(File.expand_path(file))
+      end
+    end
+  end
+
+  # Create the pane for each part of the UI
+  if VimMate::Config[:layout_big_terminals]
+    # -------------
+    # | F |       |
+    # | i |       |
+    # | l |  Vim  |
+    # | e |       |
+    # | s |       |
+    # -------------
+    # | Terminals |
+    # -------------
+    gtk_top_pane = Gtk::HPaned.new
+    gtk_top_pane.add(files.gtk_window)
+    gtk_top_pane.add(vim.gtk_window)
+    gtk_file_expander = gtk_top_pane
+
+    gtk_full_pane = Gtk::VPaned.new
+    gtk_full_pane.add(gtk_top_pane)
+    gtk_full_pane.pack2(terminals.gtk_window, false, false)
+  else
+    # -------------
+    # |   |       |
+    # | F |       |
+    # | i |  Vim  |
+    # | l |       |
+    # | e |       |
+    # | s ---------
+    # |   | Term  |
+    # -------------
+    gtk_right_pane = Gtk::VPaned.new
+    gtk_right_pane.add(vim.gtk_window)
+    gtk_right_pane.pack2(terminals.gtk_window, false, false)
+
+    gtk_full_pane = Gtk::HPaned.new
+    gtk_full_pane.pack1(files.gtk_window, false, true)
+    gtk_full_pane.add(gtk_right_pane)
+    gtk_file_expander = gtk_full_pane
+  end
+
+  main.gtk_window.add(gtk_full_pane)
+
+  # React when the file list is expanded or closed
+  previous_separator_position = VimMate::Config[:files_opened_width]
+  files.add_expander_signal do |expanded|
+    if expanded
+      gtk_file_expander.position = previous_separator_position
+    else
+      previous_separator_position = gtk_file_expander.position
+      gtk_file_expander.position = VimMate::Config[:files_closed_width]
+    end
+  end
+  unless VimMate::Config[:files_expanded]
+    gtk_file_expander.position = VimMate::Config[:files_closed_width]
+  end
+
+  # Go!
+  main.start(vim)
+end
+

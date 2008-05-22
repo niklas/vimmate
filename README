@@ -1,0 +1,221 @@
+= Description
+
+VimMate is a graphical add-on to Vim with IDE-like features: it does more
+than the plain Vim while still being lightweight. Even with the additional
+features, it stays out of the way for it's main task: editing files with Vim.
+VimMate adds functionality to Vim by embedding Vim GTK GUI (gVim) within
+VimMate.
+
+Some of the ideas of VimMate comes from PIDA[http://pida.berlios.de/]
+and others from TextMate[http://macromates.com/] (although I've never
+used TextMate).
+
+VimMate's homepage: http://vimmate.rubyforge.org
+
+= Features
+
+VimMate has the following features:
+- Uses Vim[http://www.vim.org/] for the text editor so it has all of
+  Vim's qualities.
+- Written in Ruby[http://www.ruby-lang.org/] so the code is nice and clean.
+- Integrated, hideable and searchable file tree with filter for easy
+  project viewing.
+- Multiple integrated terminals <i>(Optional)</i>.
+- Basic Subversion[http://subversion.tigris.org/] integration: <i>(Optional)</i>
+  - The file status is displayed in the file tree.
+  - You can add, rename, delete and revert a file from the file tree.
+- Navigate the various part of the interface with the keyboard
+
+= Installation
+VimMate has only been tested under Linux (in fact,
+{Gentoo Linux}[http://www.gentoo.org/]). It might work under other OSs,
+although I do not know. I think only the file list will work under
+Windows because Vim does not use GTK under Windows so it cannot be embedded.
+I know nothing about MacOSX so I cannot say if it works or not.
+
+To install:
+- Make sure Vim[http://www.vim.org/] is installed and compiled with the
+  graphical interface. Try running +gvim+ to see if it works. Only Vim
+  version 7.0 has been tested.
+- Make sure Ruby[http://www.ruby-lang.org/] version 1.8 or more is installed.
+  Try running <tt>ruby --version</tt> in a terminal.
+- Install the Ruby bindings to GTK and GNOME (for the VTE terminal). See
+  {Ruby-GNOME2 website}[http://ruby-gnome2.sourceforge.jp/]. Only
+  Ruby-GNOME2 version 0.15 and 0.16 has been tested. You don't need VTE: if
+  it's not installed, VimMate will not have terminals but will run anyway.
+- If you want to use the Subversion integration feature, you must install
+  the subversion bindings for Ruby. Check if it's available for your OS
+  or get the sources from
+  {Subversion's website}[http://subversion.tigris.org/] and compile them.
+- Download the latest VimMate on
+  {VimMate's homepage}[http://vimmate.rubyforge.org/].
+- You now have 3 choices to install VimMate: manually, with Ruby Gems or with
+  <tt>setup.rb</tt>:
+  - With Ruby Gems
+    - Simply run <tt>gem install VimMate</tt> .
+  - With <tt>setup.rb</tt>
+    - Simply run <tt>ruby setup.rb</tt> . Run <tt>ruby setup.rb --help</tt> for
+      more information.
+  - Manually
+    - Copy the file <tt>bin/vimmate</tt> and the directory
+      <tt>lib/vimmatelib</tt> to a directory somewhere in your path.
+    - Make sure +vimmate+ is executable: <tt>chmod u+x vimmate</tt>
+- cd to a directory where your project is. (Watch out for directories
+  with too many files. See <i>Limitations</i> below.)
+- Run +vimmate+
+
+Run <tt>vimmate --help</tt> for more information.
+
+= Configuration
+Note that you don't have to do what's described in this section:
+everything will work anyway. It's just filled with nice tricks.
+
+VimMate doesn't need any special configuration to run. But, when VimMate is
+first run, it creates a file named <tt>.vimmaterc</tt> in your HOME directory.
+You can edit this file at your own risk. If anything goes wrong, you can
+always delete this file and it will be recreated with the default
+configuration.
+
+Most variables are self explanatory. One variable deserves a special
+explanation because it can be useful to change. It's the line that
+starts with <tt>:terminals_autoexec:</tt>. This line specifies a string
+that is automatically executed by every terminals that are created by
+VimMate. I'm sure you can think about a way to use this, but the idea
+of this configuration line is to initialize the terminal so that it can
+execute Vim (the console <tt>vim</tt>) without weird warnings about
+escape characters. Here is how to configure it so that it works without
+warnings with the bash shell:
+
+ # Other configurations before...
+ # (Because of a small quirk in rdoc, I put a space between the
+ #  colon (:) and terminals_autoexec but there must be no space.)
+ : terminals_autoexec: |
+  export TERM="gnome"
+  clear
+   
+ # Other configurations after...
+
+You can adapt those commands for your shell. If you wonder about the
+syntax of this file, it's a Ruby hash with Ruby symbols as keys dumped
+with YAML[http://www.yaml.org/].
+
+If you have problems getting it to work, watch out for whitespace because
+YAML is whitespace sensitive (like python). If you still can't get it to
+work, try running this in a shell:
+
+ ruby -ryaml -e 'puts({:terminals_autoexec => %{export TERM="gnome"\nclear}}.to_yaml)'
+
+You can redirect the output of this command to overwrite your .vimmaterc file
+and then run VimMate: it should work this time.
+
+An other nice trick is to add a special alias that exists only within
+VimMate's terminals (Thanks to Jonathan Hankins for this updated tip,
+see {#13432}[http://rubyforge.org/tracker/index.php?func=detail&aid=13432&group_id=2612&atid=10058]
+for details):
+
+ # Other configurations before...
+ # (Because of a small quirk in rdoc, I put a space between the
+ #  colon (:) and terminals_autoexec but there must be no space.)
+ : terminals_autoexec: |
+   alias vm='gvim --servername $(gvim --serverlist | grep "VIMMATE_$PPID") --remote-tab'
+   export TERM="gnome"
+   clear
+   
+ # Other configurations after...
+
+Again, you have to adapt for your shell because this is for bash. This
+will also only works if you have only one VimMate running. This will allow
+you to type
+
+ vm a_file
+
+to edit <tt>a_file</tt> with the running VimMate. This can be handy for those
+who prefer the command line to the file tree.
+
+If you use Subversion (SVN), you can add yet an other line to be able to
+edit your commit messages within VimMate:
+
+ # Other configurations before...
+ # (Because of a small quirk in rdoc, I put a space between the
+ #  colon (:) and terminals_autoexec but there must be no space.)
+ : terminals_autoexec: |
+   alias vm='gvim --servername $(gvim --serverlist | grep "VIMMATE_$PPID") --remote-tab'
+   export SVN_EDITOR='gvim --servername `gvim --serverlist | grep VIMMATE_` --remote-wait'
+   export TERM="gnome"
+   clear
+   
+ # Other configurations after...
+
+Then, when you run:
+
+ svn commit
+
+the commit message will be edited within VimMate and Subversion will wait for
+the buffer containing the file to be deleted with the command
+
+ :bd
+
+within Vim.
+
+= Interesting Vim scripts
+Here are some of the Vim scripts that I think are useful with VimMate to
+make Vim more powerful:
+- matchit[http://www.vim.org/scripts/script.php?script_id=39]:
+  Extends the Vim command <tt>%</tt> to easily navigate in
+  matching language constructs for many languages.
+- rails[http://www.vim.org/scripts/script.php?script_id=1567]:
+  Easy navigation for {Ruby on Rails}[http://www.rubyonrails.org/]
+- grep[http://www.vim.org/scripts/script.php?script_id=311]:
+  Nice grep integration. I frequently use the command <tt>:Rgrep</tt>.
+- dbext[http://www.vim.org/scripts/script.php?script_id=356]:
+  Database access within Vim. Integrates well with <tt>rails.vim</tt>.
+- SimpleFold[http://eigenclass.org/hiki.rb?simplefold+plugin+0.4.0]:
+  Nicely folds classes and methods for easy navigation.
+- snippetsEmu[http://www.vim.org/scripts/script.php?script_id=1318]:
+  TextMate-like snippet expansion.
+- vcscommand[http://www.vim.org/scripts/script.php?script_id=90]:
+  Integration for CVS and Subversion (SVN). Supports lots of things like
+  viewing the version control system log, integrated Vim diff, etc.
+- surround[http://www.vim.org/scripts/script.php?script_id=1697]:
+  A nice script to add, change or remove "surroundings", like
+  parentheses, brackets, quotes, XML tags...
+- ruby-block-conv[http://eigenclass.org/hiki.rb?Ruby+block+conversion+macros+for+Vim]:
+  Convert single line blocks from {} into do/end and the other way around.
+
+There are a lot of other nice script out there so check
+{Vim's web site}[http://www.vim.org/] for more scripts.
+
+= Keyboard shortcuts
+Here is a list of the various shortcut keys:
+- CTRL+SHIFT+S: Set focus to current terminal (shell)
+- CTRL+SHIFT+T: Create a new terminal
+- CTRL+SHIFT+W: Close current terminal
+- CTRL+PAGEDOWN: Next terminal
+- CTRL+PAGEDOWN: Previous terminal
+- CTRL+SHIFT+L: Set focus to file filter
+- CTRL+SHIFT+F: Set focus to file list
+- CTRL+SHIFT+E: Set focus to search file list
+- CTRL+SHIFT+V: Set focus to Vim
+Thanks to Florian Frank who sent me a patch for the first 5 shortcuts. The
+other shortcuts where also added thanks to this patch by Florian Frank. (Note
+that if there are bugs in the processing of those shortcut keys, it's probably
+my fault and not is.)
+
+= Limitations
+- VimMate cannot handle well a directory tree with thousands of files,
+  although it has no problems with hundreds of files although it can take
+  some time to start.
+- Vim loads after VimMate is started. If you close VimMate or open a file
+  before Vim starts and is connected to VimMate, this can lead to weird
+  things. You should wait for Vim before you start playing with VimMate.
+  Weird things can also happen if you close VimMate without saving in
+  Vim before.
+- Setting the focus to Vim with the shortcut key doesn't work perfectly. If it
+  doesn't seem to work, you can try to press TAB or the Up or Down keys on
+  your keyboard after using the shortcut key and it works most of the time.
+
+= Author and Copyright
+
+VimMate was written and is Copyright (C) 2006 Guillaume Benny
+
+See COPYING[link:files/COPYING.html] for more information.

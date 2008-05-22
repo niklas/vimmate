@@ -1,0 +1,108 @@
+= Changelog
+
+=== Version 0.6.6
+- # 15198: After a file was opened in Vim, the focus was not in Vim, so if you
+  started typing, you would type in the file list, not in Vim. This has been
+  corrected. Thanks to Gerda Shank for the bug report.
+- # 14387: A new option is now available to start a login shell by default in
+  the terminal window. The option :terminals_login_shell is set to false by
+  default. If set to true, it will launch the $SHELL command if defined, the
+  shell defined in /etc/passwd if defined and /bin/sh otherwise. In all cases,
+  it will pass the -l option to the shell. Thanks to Pablo Castellazzi for the
+  patch.
+- # 14886: When filtering, directories that contain no matching files are now
+  automatically hidden. Also, a new option is now available to automatically
+  expand the file tree when filtering. The option is
+  :files_auto_expand_on_filter and is set to false by default. Thanks to
+  Stefan for the original patch.
+
+=== Version 0.6.5
+- VimMate would crash when VTE was not present when using shortcut keys
+- Changed some shortcut keys:
+  - CTRL+SHIFT+S: Set focus to current terminal (shell)
+  - CTRL+SHIFT+T: Create a new terminal
+  - CTRL+SHIFT+E: Set focus to search file list
+- # 13210: A new option is now available to hide the status of the files. This helps
+  when using ellipsis since it leaves more space for the file names. The new
+  option is :files_show_status and it's set to true by default. Thanks to
+  Stephen Walker who sent me a patch for this.
+
+=== Version 0.6.4
+- VimMate now has shortcut keys to control it's various parts. Here is the
+  list of the shortcut keys that where added:
+  - CTRL+SHIFT+T: Set focus to current terminal
+  - CTRL+SHIFT+N: Create a new terminal
+  - CTRL+SHIFT+W: Close current terminal
+  - CTRL+PAGEDOWN: Next terminal
+  - CTRL+PAGEDOWN: Previous terminal
+  - CTRL+SHIFT+L: Set focus to file filter
+  - CTRL+SHIFT+F: Set focus to file list
+  - CTRL+SHIFT+S: Set focus to search file list
+  - CTRL+SHIFT+V: Set focus to Vim
+  Setting the focus to Vim doesn't work perfectly. If it doesn't seem to work,
+  you can try to press TAB or the Up or Down keys on your keyboard after using
+  the CTRL+SHIFT+V shortcut and it works most of the time. Thanks to Florian
+  Frank who sent me a patch for the first 5 shortcuts. The other shortcuts
+  where also added thanks to this patch by Florian Frank.
+
+=== Version 0.6.3
+- # 13212: VimMate could not be resized properly.
+- # 7399, partially. A new warning has been added when too many files are
+  loaded by VimMate. The warning asks the user if he wants to continue. The
+  default number of files is 300 and can be changed by setting the option
+  :files_warn_too_many_files to an other number. The warning is popped every
+  multiple of this settings, which means at 300, 600, 900... This can be
+  changed by setting the option :files_warn_too_many_files_each_step to
+  false.
+
+=== Version 0.6.2
+- # 7028: It's now possible to install VimMate using the provided setup.rb
+  or with Ruby Gems.
+- Two layouts are now available. The old layout, with big terminals:
+    -------------
+    | F |       |
+    | i |       |
+    | l |  Vim  |
+    | e |       |
+    | s |       |
+    -------------
+    | Terminals |
+    -------------
+  And the new layout, with a big file list:
+    -------------
+    |   |       |
+    | F |       |
+    | i |  Vim  |
+    | l |       |
+    | e |       |
+    | s ---------
+    |   | Term  |
+    -------------
+  The new layout is now the default. You can change this by setting the
+  :layout_big_terminals option to true.
+- # 6761: A new way of opening files is now available. A new list of files
+  allows you to type only a part of a file name to see the possible files
+  filtered instantly. You can then select the file from the list or type
+  <tt>Enter</tt> directly if the file you are searching for is selected.
+  You can remove this new list by setting the option :files_use_search
+  to false. You can also specify if the search is case sensitive or not
+  with the option :files_search_ignore_case. The case is ignored by default.
+- Long file names in the file list are now shorten with ellipsis. You can
+  disable ellipsis by setting the option :files_use_ellipsis to false.
+- Files or directories can now be excluded on the command line. You can specify
+  a comma separated list of names that will be matched against the end of the
+  path of each files of directories. So <tt>vimmate -x html,pkg,README</tt>
+  will exclude any files with the names html, pkg or README. But,
+  <tt>vimmate -x bin/README</tt> will only exclude the file README in the bin
+  directory. Note that <tt>vimmate -x ME</tt> will only exclude files or 
+  directories named ME and not files ending with ME like README.
+
+=== Version 0.6.1
+- # 6721: Added "Tab Open" in the menu. "Tab Open" is the default when opening
+  a file not from the menu. This can be changed by setting the option
+  :files_default_open_in_tabs to false.
+- Better Subversion integration: Add a new menu Subversion with Add, Rename,
+  Delete and Revert as sub-menus.
+
+=== Version 0.6.0
+- First release
