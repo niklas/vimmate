@@ -56,10 +56,11 @@ module VimMate
     TYPE_SEPARATOR = 2
 
     # Create a FilesWindow
-    def initialize(exclude_file_list = [])
+    def initialize(exclude_file_list = [], vim_window = FalseClass)
+      @vim_window = vim_window
       @open_signal = Set.new
       @menu_signal = Set.new
-      @expander_signal = Set.new
+      #@expander_signal = Set.new
 
       @filter_string = ""
       
@@ -78,6 +79,8 @@ module VimMate
       @gtk_filtered_tree_model.set_visible_func do |model, iter|
         if @filter_string.nil? or @filter_string.empty?
           true
+        elsif iter[TYPE] == TYPE_SEPARATOR
+          false
         else
           iter[VISIBLE]
         end
@@ -223,21 +226,58 @@ module VimMate
         end
       end
 
-      
-      @gtk_expander = Gtk::Expander.new("File list")
-      @gtk_expander.expanded = Config[:files_expanded]
+      @gtk_notebook = Gtk::Notebook.new()
+
+      @gtk_notebook.tab_pos=Gtk::POS_LEFT
+
+      files_label = Gtk::Label.new("Files", true)
+      files_label.set_angle(90)
+
       if Config[:files_use_search]
-        @gtk_expander.add(@gtk_paned_box)
+        @gtk_notebook.append_page(@gtk_paned_box, files_label)
       else
-        @gtk_expander.add(gtk_top_box)
+        @gtk_notebook.append_page(gtk_top_box, files_label)
       end
-      @gtk_expander.signal_connect("notify::expanded") do
-        @expander_signal.each do |signal|
-          signal.call(@gtk_expander.expanded?)
+
+
+      tags_tree_model = Gtk::TreeStore.new(String,
+                                           Gdk::Pixbuf,
+                                           String)
+      
+      # Tree View
+      tags_tree_view = Gtk::TreeView.new(tags_tree_model)
+      tags_tree_view.selection.mode = Gtk::SELECTION_SINGLE
+      tags_tree_view.headers_visible = Config[:file_headers_visible]
+      tags_tree_view.hover_selection = Config[:file_hover_selection]
+
+      # Double-click, Enter, Space: Signal to open the file
+      tags_tree_view.signal_connect("row-activated") do |view, path, column|
+        path = tags_tree_model.get_iter(path)[PATH]
+        @open_signal.each do |signal|
+          signal.call(path,
+                      Config[:files_default_open_in_tabs] ? :tab_open : :open)
         end
       end
 
-      gtk_window.border_width = 5
+      @tags_text_buffer = Gtk::TextBuffer.new()
+      gtk_text_view = Gtk::TextView.new(@tags_text_buffer)
+      gtk_text_view.editable = false
+      gtk_text_view.cursor_visible = false
+
+      @gtk_scrolled_window_tags = Gtk::ScrolledWindow.new
+      @gtk_scrolled_window_tags.set_policy(Gtk::POLICY_AUTOMATIC,
+                                      Gtk::POLICY_AUTOMATIC)
+      @gtk_scrolled_window_tags.add(gtk_text_view)
+      
+      # Set the default size for the file list
+      @gtk_scrolled_window_tags.set_size_request(Config[:files_opened_width], -1)
+
+      tags_label = Gtk::Label.new("Tags", true)
+      tags_label.set_angle(90)
+
+      @gtk_notebook.append_page(@gtk_scrolled_window_tags, tags_label)
+
+      gtk_window.border_width = 3
 
       @file_tree_mutex = Mutex.new
     end
@@ -252,7 +292,7 @@ module VimMate
 
     # The "window" for this object
     def gtk_window
-      @gtk_expander
+      @gtk_notebook
     end
 
     # Refresh the file list
@@ -273,11 +313,11 @@ module VimMate
         return
       end
       @filter_string = filter
-      
+
       # Filter tree view so only directories and separators with matching
       # elements are set visible
       visible_path = Hash.new(false)
-      
+
       @gtk_tree_store.each do |model,path,iter|
         if iter[NAME] and iter[TYPE] == TYPE_FILE
           if iter[VISIBLE] = iter[NAME].index(@filter_string)
@@ -353,27 +393,47 @@ module VimMate
     # Add a block that will be called when the user choose to expand or
     # close the expander. The block takes one argument: if the expander
     # is opened or closed
-    def add_expander_signal(&block)
-      @expander_signal << block
-    end
+    #def add_expander_signal(&block)
+    #  @expander_signal << block
+    #end
 
     # Indicates that the initial file adding is going on. The timer to refresh
     # the list is started after the initial add.
     def initial_add(&block)
       @file_tree.initial_add(&block)
+
+      #TODO add file monitoring with gamin or fam or something like that
       # Launch a timer to refresh the file list
       Gtk.timeout_add(Config[:files_refresh_interval] * 1000) do 
         do_refresh
+        true
+      end
+      
+      #timeout for tags, put somewhere else later
+      Gtk.timeout_add(Config[:tags_refresh_interval] * 1000) do 
+        do_tags_refresh
         true
       end
     end
     
     private
 
-    # Lunch the refresh of the tree
+    # Launch the refresh of the tree
     def do_refresh
-      @file_tree_mutex.synchronize do
-        @file_tree.refresh
+      if @gtk_notebook.page == 0
+        @file_tree_mutex.synchronize do
+          @file_tree.refresh
+        end
+      end
+    end
+
+    def do_tags_refresh
+      if @gtk_notebook.page == 1
+        path = @vim_window.get_current_buffer_path
+        if path
+          #TODO make me dependent/configurable on file type/suffix
+          @tags_text_buffer.text = `ctags -ex #{path}`
+        end
       end
     end
 

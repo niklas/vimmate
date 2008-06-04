@@ -83,8 +83,8 @@ fork do
 
   # Create the main objects
   main = VimMate::MainWindow.new
-  files = VimMate::FilesWindow.new(exclude_file_list)
   vim = VimMate::VimWindow.new
+  files = VimMate::FilesWindow.new(exclude_file_list, vim)
   menu = VimMate::FilesMenu.new(main)
   
   terminals = VimMate::Requirer.require_if('vimmatelib/terminals_window', VimMate::DummyWindow.new) do
@@ -167,19 +167,19 @@ fork do
 
   main.gtk_window.add(gtk_full_pane)
 
-  # React when the file list is expanded or closed
-  previous_separator_position = VimMate::Config[:files_opened_width]
-  files.add_expander_signal do |expanded|
-    if expanded
-      gtk_file_expander.position = previous_separator_position
-    else
-      previous_separator_position = gtk_file_expander.position
-      gtk_file_expander.position = VimMate::Config[:files_closed_width]
-    end
-  end
-  unless VimMate::Config[:files_expanded]
-    gtk_file_expander.position = VimMate::Config[:files_closed_width]
-  end
+# React when the file list is expanded or closed
+#  previous_separator_position = VimMate::Config[:files_opened_width]
+#  files.add_expander_signal do |expanded|
+#    if expanded
+#      gtk_file_expander.position = previous_separator_position
+#    else
+#      previous_separator_position = gtk_file_expander.position
+#      gtk_file_expander.position = VimMate::Config[:files_closed_width]
+#    end
+#  end
+#  unless VimMate::Config[:files_expanded]
+#    gtk_file_expander.position = VimMate::Config[:files_closed_width]
+#  end
 
   # Go!
   main.start(vim)

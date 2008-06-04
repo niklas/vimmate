@@ -54,6 +54,7 @@ module VimMate
       :files_warn_too_many_files => 300,
       :files_warn_too_many_files_each_step => true,
       :files_show_status => true,
+      :tags_refresh_interval => 5,
       :terminals_enabled => true,
       :terminals_height => 50,
       :terminals_font => "10",
@@ -62,7 +63,7 @@ module VimMate
       :terminals_audible_bell => false,
       :terminals_visible_bell => false,
       :terminals_autoexec => "",
-      :terminals_login_shell => false,
+      :terminals_login_shell => false,      
       :subversion_enabled => true,
     }.freeze
 

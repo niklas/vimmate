@@ -88,6 +88,20 @@ module VimMate
       @gtk_socket.can_focus = true
       @gtk_socket.has_focus = true
     end
+
+    def get_current_buffer_path
+      if @vim_started
+        #`gvim --servername #{@vim_server_name} --remote-send ':redir! > outputfile<cr>'`
+        #`gvim --servername #{@vim_server_name} --remote-send ':echo getcwd()<cr>'`
+        #`gvim --servername #{@vim_server_name} --remote-send ':echo bufname(bufnr(""))<cr>'`
+        #`gvim --servername #{@vim_server_name} --remote-send ':redir END<cr>'`
+
+        cwd = `gvim --servername #{@vim_server_name} --remote-expr 'getcwd()'`.chomp+'/'
+        if cwd
+          return cwd+`gvim --servername #{@vim_server_name} --remote-expr 'bufname(bufnr(""))'`
+        end
+      end
+    end
   end
 end
 
