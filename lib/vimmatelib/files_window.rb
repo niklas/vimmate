@@ -411,7 +411,7 @@ module VimMate
       
       #timeout for tags, put somewhere else later
       Gtk.timeout_add(Config[:tags_refresh_interval] * 1000) do 
-        do_tags_refresh
+        do_refresh_tags
         true
       end
     end
@@ -427,12 +427,18 @@ module VimMate
       end
     end
 
-    def do_tags_refresh
+    def do_refresh_tags
       if @gtk_notebook.page == 1
         path = @vim_window.get_current_buffer_path
         if path
           #TODO make me dependent/configurable on file type/suffix
-          @tags_text_buffer.text = `ctags -ex #{path}`
+          tags = `ctags -ex #{path}`
+          tags = tags.split("\n")
+          tags.length.times do |i|
+            id, type, line, file = tags[i].split
+            tags[i] = "#{id}, #{line}"
+          end
+          @tags_text_buffer.text = tags.join("\n")
         end
       end
     end
