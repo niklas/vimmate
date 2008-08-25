@@ -31,20 +31,23 @@ module VimMate
     NAME = 0
     # Column for the line it is in
     LINE = 1
+    PATH = 2
 
     def add_parent_rows
       #add some parents
       @methods = @tags_treestore.append(nil)
       @methods[0] = 'Methods'
-      @methods[1] = -1
+      @methods[1] = ''
+      @methods[2] = ''
       @classes = @tags_treestore.append(nil)
       @classes[0] = 'Classes'
-      @classes[1] = -1
+      @classes[1] = ''
+      @classes[2] = ''
     end
 
     def initialize(vim_window = FalseClass)
       @vim_window = vim_window
-      @tags_treestore = Gtk::TreeStore.new(String,Integer)
+      @tags_treestore = Gtk::TreeStore.new(String,String,String)
       
       add_parent_rows
 
@@ -62,8 +65,9 @@ module VimMate
 
       # Double-click, Enter, Space: Signal to open the file
       @tags_tree_view.signal_connect("row-activated") do |view, path, column|
-        line = @tags_treestore.get_iter(path)[LINE]
-        @vim_window.jump_to_line(line)
+        iter = @tags_treestore.get_iter(path)
+        @vim_window.open(iter[PATH], Config[:files_default_open_in_tabs] ? :tab_open : :open)
+        @vim_window.jump_to_line(iter[LINE].to_i)
       end
 
       #@tags_text_buffer = Gtk::TextBuffer.new()
@@ -117,11 +121,13 @@ module VimMate
             if type ==  'method' or type == 'function'
               new_row = @tags_treestore.append(@methods)
               new_row.set_value(NAME, id)
-              new_row.set_value(LINE, line.to_i)
+              new_row.set_value(LINE, line)
+              new_row.set_value(PATH, file)
             else if type == 'class'
               new_row = @tags_treestore.append(@classes)
               new_row.set_value(NAME, id)
-              new_row.set_value(LINE, line.to_i)
+              new_row.set_value(LINE, line)
+              new_row.set_value(PATH, file)
             end
             end
           end
