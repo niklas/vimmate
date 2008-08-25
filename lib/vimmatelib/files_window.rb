@@ -201,15 +201,15 @@ module VimMate
       # Create the file tree
       initialize_file_tree(exclude_file_list)
       
-      gtk_top_box = Gtk::VBox.new
-      gtk_top_box.pack_start(gtk_filter_box, false, false)
-      gtk_top_box.pack_start(@gtk_scrolled_window, true, true)
-      gtk_top_box.pack_start(gtk_label, false, false)
+      @gtk_top_box = Gtk::VBox.new
+      @gtk_top_box.pack_start(gtk_filter_box, false, false)
+      @gtk_top_box.pack_start(@gtk_scrolled_window, true, true)
+      @gtk_top_box.pack_start(gtk_label, false, false)
 
       # Create the search file list if it's enabled
       if Config[:files_use_search]
         @gtk_paned_box = Gtk::VPaned.new
-        @gtk_paned_box.add(gtk_top_box)
+        @gtk_paned_box.add(@gtk_top_box)
         @gtk_paned_box.add((@search_window = SearchWindow.new(@file_tree)).gtk_window)
         @gtk_paned_box.position = Config[:files_search_separator_position]
 
@@ -226,57 +226,6 @@ module VimMate
         end
       end
 
-      @gtk_notebook = Gtk::Notebook.new()
-
-      @gtk_notebook.tab_pos=Gtk::POS_LEFT
-
-      files_label = Gtk::Label.new("Files", true)
-      files_label.set_angle(90)
-
-      if Config[:files_use_search]
-        @gtk_notebook.append_page(@gtk_paned_box, files_label)
-      else
-        @gtk_notebook.append_page(gtk_top_box, files_label)
-      end
-
-
-      tags_tree_model = Gtk::TreeStore.new(String,
-                                           Gdk::Pixbuf,
-                                           String)
-      
-      # Tree View
-      tags_tree_view = Gtk::TreeView.new(tags_tree_model)
-      tags_tree_view.selection.mode = Gtk::SELECTION_SINGLE
-      tags_tree_view.headers_visible = Config[:file_headers_visible]
-      tags_tree_view.hover_selection = Config[:file_hover_selection]
-
-      # Double-click, Enter, Space: Signal to open the file
-      tags_tree_view.signal_connect("row-activated") do |view, path, column|
-        path = tags_tree_model.get_iter(path)[PATH]
-        @open_signal.each do |signal|
-          signal.call(path,
-                      Config[:files_default_open_in_tabs] ? :tab_open : :open)
-        end
-      end
-
-      @tags_text_buffer = Gtk::TextBuffer.new()
-      gtk_text_view = Gtk::TextView.new(@tags_text_buffer)
-      gtk_text_view.editable = false
-      gtk_text_view.cursor_visible = false
-
-      @gtk_scrolled_window_tags = Gtk::ScrolledWindow.new
-      @gtk_scrolled_window_tags.set_policy(Gtk::POLICY_AUTOMATIC,
-                                      Gtk::POLICY_AUTOMATIC)
-      @gtk_scrolled_window_tags.add(gtk_text_view)
-      
-      # Set the default size for the file list
-      @gtk_scrolled_window_tags.set_size_request(Config[:files_opened_width], -1)
-
-      tags_label = Gtk::Label.new("Tags", true)
-      tags_label.set_angle(90)
-
-      @gtk_notebook.append_page(@gtk_scrolled_window_tags, tags_label)
-
       gtk_window.border_width = 3
 
       @file_tree_mutex = Mutex.new
@@ -292,7 +241,11 @@ module VimMate
 
     # The "window" for this object
     def gtk_window
-      @gtk_notebook
+      if Config[:files_use_search]
+        @gtk_paned_box
+      else
+        @gtk_top_box
+      end
     end
 
     # Refresh the file list
@@ -408,38 +361,16 @@ module VimMate
         do_refresh
         true
       end
-      
-      #timeout for tags, put somewhere else later
-      Gtk.timeout_add(Config[:tags_refresh_interval] * 1000) do 
-        do_refresh_tags
-        true
-      end
     end
     
     private
 
     # Launch the refresh of the tree
     def do_refresh
-      if @gtk_notebook.page == 0
+      #if @gtk_notebook.page == 0
         @file_tree_mutex.synchronize do
           @file_tree.refresh
-        end
-      end
-    end
-
-    def do_refresh_tags
-      if @gtk_notebook.page == 1
-        path = @vim_window.get_current_buffer_path
-        if path
-          #TODO make me dependent/configurable on file type/suffix
-          tags = `ctags -ex #{path}`
-          tags = tags.split("\n")
-          tags.length.times do |i|
-            id, type, line, file = tags[i].split
-            tags[i] = "#{id}, #{line}"
-          end
-          @tags_text_buffer.text = tags.join("\n")
-        end
+      #  end
       end
     end
 

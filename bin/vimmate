@@ -78,6 +78,7 @@ fork do
   require 'vimmatelib/dummy_window'
   require 'vimmatelib/files_menu'
   require 'vimmatelib/files_window'
+  require 'vimmatelib/sidebar_window'
   require 'vimmatelib/main_window'
   require 'vimmatelib/vim_window'
 
@@ -85,6 +86,7 @@ fork do
   main = VimMate::MainWindow.new
   vim = VimMate::VimWindow.new
   files = VimMate::FilesWindow.new(exclude_file_list, vim)
+  sidebar = VimMate::SidebarWindow.new(files.gtk_window, vim)
   menu = VimMate::FilesMenu.new(main)
   
   terminals = VimMate::Requirer.require_if('vimmatelib/terminals_window', VimMate::DummyWindow.new) do
@@ -138,7 +140,7 @@ fork do
     # | Terminals |
     # -------------
     gtk_top_pane = Gtk::HPaned.new
-    gtk_top_pane.add(files.gtk_window)
+    gtk_top_pane.add(sidebar.gtk_window)
     gtk_top_pane.add(vim.gtk_window)
     gtk_file_expander = gtk_top_pane
 
@@ -160,7 +162,7 @@ fork do
     gtk_right_pane.pack2(terminals.gtk_window, false, false)
 
     gtk_full_pane = Gtk::HPaned.new
-    gtk_full_pane.pack1(files.gtk_window, false, true)
+    gtk_full_pane.pack1(sidebar.gtk_window, false, true)
     gtk_full_pane.add(gtk_right_pane)
     gtk_file_expander = gtk_full_pane
   end

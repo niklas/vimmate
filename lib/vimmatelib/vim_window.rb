@@ -71,6 +71,13 @@ module VimMate
       focus_vim
       self
     end
+    
+  def jump_to_line(line)
+    start
+    if line >= 0
+      `gvim --servername #{@vim_server_name} --remote-send '<ESC><ESC><ESC>:#{line}<CR>'`
+    end
+  end
 
     # Start Vim's window. This must be called after the window which
     # will contain Vim is visible.

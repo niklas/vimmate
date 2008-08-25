@@ -21,9 +21,35 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 =end
 
+require 'gtk2'
+require 'vimmatelib/config'
+require 'vimmatelib/tags_window'
+
 module VimMate
 
-  # VimMate's version
-  VERSION = "0.6.6"
-end
+  class SidebarWindow
+    def initialize(files_window, vim)
+      
+      @gtk_notebook = Gtk::Notebook.new()
 
+      @gtk_notebook.tab_pos=Gtk::POS_LEFT
+
+      files_label = Gtk::Label.new("Files", true)
+      files_label.set_angle(90)
+
+      @gtk_notebook.append_page(files_window, files_label)
+
+      @tags_window = VimMate::TagsWindow.new(vim)
+      tags_label = Gtk::Label.new("Tags", true)
+      tags_label.set_angle(90)
+
+      @gtk_notebook.append_page(@tags_window.gtk_window, tags_label)
+    end
+    
+    # The "window" for this object
+    def gtk_window
+      @gtk_notebook
+    end
+
+  end
+end
