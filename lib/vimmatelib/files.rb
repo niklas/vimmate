@@ -35,7 +35,7 @@ module VimMate
     # Create a ListedFile from a path and an optional parent. A block
     # must be passed so it can be called to signal changes.
     def initialize(path, parent = nil, &block)
-      @path = path
+      @path = File.expand_path path
       @name = File.basename(path)
       @parent = parent
       @tree_signal = block
@@ -112,7 +112,7 @@ module VimMate
     
     # Create a ListedDirectory from a path and an optional parent. A block
     # must be passed so it can be called to signal changes.
-    def initialize(path, exclude_file_list, parent = nil, &block)
+    def initialize(path, parent = nil, &block)
       super(path, parent, &block)
       @files = Set.new
       @exclude_file_list = exclude_file_list
@@ -194,6 +194,10 @@ module VimMate
       @paths.each(&block)
       self
     end
+
+    def paths_count
+      @paths.length
+    end
     
     # Add a path: a file or a directory. If it's a directory, all files
     # within this directory are also added
@@ -201,9 +205,9 @@ module VimMate
       return unless File.exist? path
       return if @exclude_file_list.any? {|f| path[-(f.size+1)..-1] == "/#{f}" }
       @paths << if File.directory? path
-                  ListedDirectory.new(path, @exclude_file_list, &@signal_method)
+                  ListedDirectory.new(path)
                 else
-                  ListedFile.new(path, &@signal_method)
+                  ListedFile.new(path)
                 end
       self
     end
