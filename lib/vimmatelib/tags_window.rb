@@ -27,30 +27,42 @@ module VimMate
 
   class TagsWindow
     
+    #treestore columns
     # Column for the tag name
     NAME = 0
     # Column for the line it is in
     LINE = 1
     PATH = 2
 
-    def add_parent_rows
+    #path_node_connection columns
+    NODE = 0
+    METHODS = 1
+    CLASSES = 2
+
+    def add_parent_rows(paths)
       #add some parents
-      @methods = @tags_treestore.append(nil)
-      @methods[0] = 'Methods'
-      @methods[1] = ''
-      @methods[2] = ''
-      @classes = @tags_treestore.append(nil)
-      @classes[0] = 'Classes'
-      @classes[1] = ''
-      @classes[2] = ''
+      @path_node_connection = Hash.new(false)
+      paths.each do |path|
+        node = @tags_treestore.append(nil)
+        node[0] = path.split('/').last
+        node[1] = ''
+        node[2] = ''
+        methods = @tags_treestore.append(node)
+        methods[0] = 'Methods'
+        methods[1] = ''
+        methods[2] = ''
+        classes = @tags_treestore.append(node)
+        classes[0] = 'Classes'
+        classes[1] = ''
+        classes[2] = ''
+        @path_node_connection[path] = [node, methods, classes]
+      end
     end
 
     def initialize(vim_window = FalseClass)
       @vim_window = vim_window
       @tags_treestore = Gtk::TreeStore.new(String,String,String)
       
-      add_parent_rows
-
       # Tree View
       @tags_tree_view = Gtk::TreeView.new(@tags_treestore)
       @tags_tree_view.selection.mode = Gtk::SELECTION_SINGLE
@@ -107,30 +119,31 @@ module VimMate
 
     def do_refresh_tags
       #if @gtk_notebook.page == 1
-        path = @vim_window.get_current_buffer_path
-        if path
+        paths = @vim_window.get_all_buffer_paths
+
+        @tags_treestore.clear
+        add_parent_rows(paths)
+          
+        paths.each do |path|
           #TODO make me dependent/configurable on file type/suffix
           tags = `ctags -ex #{path}`
           tags = tags.split("\n")
           
-          @tags_treestore.clear
-          add_parent_rows
-          
           tags.length.times do |i|
             id, type, line, file = tags[i].split
             if type ==  'method' or type == 'function'
-              new_row = @tags_treestore.append(@methods)
+              new_row = @tags_treestore.append(@path_node_connection[path][METHODS])
               new_row.set_value(NAME, id)
               new_row.set_value(LINE, line)
               new_row.set_value(PATH, file)
             else if type == 'class'
-              new_row = @tags_treestore.append(@classes)
+              new_row = @tags_treestore.append(@path_node_connection[path][CLASSES])
               new_row.set_value(NAME, id)
               new_row.set_value(LINE, line)
               new_row.set_value(PATH, file)
             end
-            end
           end
+        end
 
           @tags_tree_view.expand_all
         end
