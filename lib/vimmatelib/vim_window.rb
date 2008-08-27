@@ -66,7 +66,12 @@ module VimMate
                     call extend(tablist, tabpagebuflist(i + 1))
                 endfor
                 for i in tablist
-                    call add(pathlist, cwd .'/' . bufname(i))
+                    let bufn = bufname(i)
+                    if (bufn =~ '^/')==0
+                      call add(pathlist, cwd . '/' . bufn)
+                    else
+                      call add(pathlist, bufn)
+                    end
                 endfor
                 call filter(pathlist, "v:val != cwd.'/'" )
                 return pathlist
