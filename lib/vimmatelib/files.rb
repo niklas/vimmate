@@ -23,6 +23,7 @@ SOFTWARE.
 
 require 'set'
 require 'vimmatelib/icons'
+require 'callbacks'
 
 module VimMate
 
@@ -72,9 +73,11 @@ module VimMate
 
     def self.register(listed_file)
       @@all_by_path[listed_file.path] = listed_file
+      ListedTree.added listed_file
     end
     def self.unregister(listed_file)
       @@all_by_path.delete listed_file
+      ListedTree.removed listed_file
     end
     def self.all
       @@all_by_path.values
@@ -174,6 +177,7 @@ module VimMate
   # A tree of files and directory. Can signal added and removed files.
   class ListedTree
     include Enumerable
+    include Callbacks
     @@exclude_file_list = []
 
     # Create a ListedTree which contains ListedFile and ListedDirectory
@@ -254,6 +258,14 @@ module VimMate
     end
     def should_exclude?(filepath)
       self.class.should_exclude? filepath
+    end
+
+
+    has_callback :after, :removed
+    has_callback :after, :refreshed
+    has_callback :after, :added
+    after_added do |file_or_directory|
+      $stderr.puts "Added #{file_or_directory.path}"
     end
 
     private
