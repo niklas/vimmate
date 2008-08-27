@@ -33,8 +33,8 @@ module VimMate
     attr_accessor :row
 
     # Create a ListedFile from a path and an optional parent ListedDirectory.
-    def initialize(path, parent = nil)
-      @path = File.expand_path path
+    def initialize(new_path, parent = nil)
+      @path = File.expand_path new_path
       @name = File.basename(path)
       # FIXME or find parent by parent path
       @parent = parent
@@ -93,7 +93,6 @@ module VimMate
     def initialize(path, parent = nil)
       super(path, parent)
       @files = Set.new
-      refresh
     end
 
     # The type of icon to use
@@ -107,6 +106,10 @@ module VimMate
       self
     end
 
+    def each_directory(&block)
+      @files.select {|f| f.is_a? ListedDirectory }.each(&block)
+    end
+
     def files_count
       @files.length
     end
@@ -116,6 +119,11 @@ module VimMate
     def refresh
       super
       remove_not_existing_files
+      add_new_files
+      # refresh subdirs. files must not be refreshed this way
+      each_directory do |dir|
+        dir.refresh
+      end
 
       self
     end
@@ -126,23 +134,23 @@ module VimMate
         Dir.foreach(path) do |file|
           # Skip hidden files
           next if file =~ /^\./
-          path = File.join(path, file)
+          file_path = File.join(path, file)
 
           # Skip files that we already have
-          next if all_paths.include? path
-          next if ListedTree.should_exclude? path
+          next if self.class.all_paths.include? file_path
+          next if ListedTree.should_exclude? file_path
 
-          add_new_file_or_directory
+          add_new_file_or_directory file_path
         end
       rescue Errno::ENOENT
       end
     end
 
-    def add_new_file_or_directory(path)
-      @files << if File.directory? path
-                  ListedDirectory.new(path, self)
+    def add_new_file_or_directory(file_path)
+      @files << if File.directory? file_path
+                  ListedDirectory.new(file_path, self)
                 else
-                  ListedFile.new(path, self)
+                  ListedFile.new(file_path, self)
                 end
     end
 
