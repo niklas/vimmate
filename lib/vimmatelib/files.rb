@@ -23,23 +23,26 @@ SOFTWARE.
 
 require 'set'
 require 'vimmatelib/icons'
-require 'vimmatelib/requirer'
+require 'callbacks'
 
 module VimMate
 
   # A file within the tree
   class ListedFile
+    @@all_by_path = Hash.new
     attr_reader :name, :path, :parent
     attr_accessor :row
 
-    # Create a ListedFile from a path and an optional parent. A block
-    # must be passed so it can be called to signal changes.
-    def initialize(path, parent = nil, &block)
-      @path = path
+    # Create a ListedFile from a path and an optional parent ListedDirectory.
+    def initialize(new_path, parent = nil)
+      @path = File.expand_path new_path
       @name = File.basename(path)
+      # FIXME or find parent by parent path
       @parent = parent
-      @tree_signal = block
-      @tree_signal.call(:add, self)
+      if @parent && !@parent.is_a?(ListedDirectory)
+        raise ArgumentError, "parent is no ListedDirectory" 
+      end
+      self.class.register self
       @last_status = nil
     end
 
@@ -47,6 +50,11 @@ module VimMate
     # that does the job.
     def refresh
       self
+    end
+
+    # The type of icon to use
+    def icon_type
+      :file
     end
 
     # Returns the icon for this file
@@ -59,70 +67,50 @@ module VimMate
       ""
     end
 
-    # If subversion can be required, change the definition of some functions
-    Requirer.require_if('vimmatelib/subversion') do
-      # Refresh the file. If the file status has changed, send a refresh
-      # signal
-      def refresh
-        status = Subversion.status(@path)
-        if @last_status != status
-          @last_status = status
-          @tree_signal.call(:refresh, self)
-        end
-        self
-      end
-      
-      # Return the icon for this file depending on the file status
-      def icon
-        status = Subversion.status(@path)
-        if @last_status != status
-          @last_status = status
-        end
-        case status
-        when Subversion::UNVERSIONED, Subversion::EXTERNAL,
-             Subversion::IGNORED, Subversion::UNKNOWN
-          Icons.send("#{icon_type}_icon")
-        when Subversion::NONE, Subversion::NORMAL
-          Icons.send("#{icon_type}_green_icon")
-        when Subversion::ADDED, Subversion::DELETED,
-             Subversion::REPLACED, Subversion::MODIFIED
-          Icons.send("#{icon_type}_orange_icon")
-        when Subversion::MISSING, Subversion::MERGED,
-             Subversion::CONFLICTED, Subversion::OBSTRUCTED,
-             Subversion::INCOMPLETE
-          Icons.send("#{icon_type}_red_icon")
-        end
-      end
-
-      # Return the status text for this file depending on the file status
-      def status_text
-        Subversion.status_text(@path)
-      end
+    def exists?
+      File.exists? path
     end
 
-    # The type of icon to use
-    def icon_type
-      :file
+    def self.register(listed_file)
+      @@all_by_path[listed_file.path] = listed_file
+      ListedTree.added listed_file
+    end
+    def self.unregister(listed_file)
+      @@all_by_path.delete listed_file
+      ListedTree.removed listed_file
+    end
+    def self.all
+      @@all_by_path.values
+    end
+    def self.all_paths
+      @@all_by_path.keys
+    end
+    def self.find_by_path(path)
+      @@all[path]
     end
   end
 
   # A directory within the tree. Can contain files and other directories.
   class ListedDirectory < ListedFile
-    include Enumerable
-    
-    # Create a ListedDirectory from a path and an optional parent. A block
-    # must be passed so it can be called to signal changes.
-    def initialize(path, exclude_file_list, parent = nil, &block)
-      super(path, parent, &block)
+    # Create a ListedDirectory from a path and an optional parent.
+    def initialize(path, parent = nil)
+      super(path, parent)
       @files = Set.new
-      @exclude_file_list = exclude_file_list
-      refresh
     end
 
+    # The type of icon to use
+    def icon_type
+      :folder
+    end    
+
     # Yield each files and directory within this directory
-    def each(&block)
+    def each_file(&block)
       @files.each(&block)
       self
+    end
+
+    def each_directory(&block)
+      @files.select {|f| f.is_a? ListedDirectory }.each(&block)
     end
 
     def files_count
@@ -133,77 +121,95 @@ module VimMate
     # file is removed. If it didn't exist before, the file is added.
     def refresh
       super
-      # Find files to remove
-      files_to_remove = Set.new
-      all_paths = Set.new
-      each do |file|
-        file.refresh
-        if File.exist? file.path
-          all_paths << file.path
-        else
-          files_to_remove << file
-          @tree_signal.call(:remove, file)
-        end
+      remove_not_existing_files
+      add_new_files
+      # refresh subdirs. files must not be refreshed this way
+      each_directory do |dir|
+        dir.refresh
       end
-      @files -= files_to_remove
 
-      # Find files to add
-      begin
-        Dir.foreach(@path) do |file|
-          # Skip hidden files
-          next if file =~ /^\./
-          path = File.join(@path, file)
-          next if @exclude_file_list.any? {|f| path[-(f.size+1)..-1] == "/#{f}" }
-          # Skip files that we already have
-          next if all_paths.include? path
-          # Add the new file
-          @files << if File.directory? path
-                      ListedDirectory.new(path, @exclude_file_list, self, &@tree_signal)
-                    else
-                      ListedFile.new(path, self, &@tree_signal)
-                    end
-        end
-      rescue Errno::ENOENT
-      end
       self
     end
 
-    # The type of icon to use
-    def icon_type
-      :folder
-    end    
+    # Find files to add
+    def add_new_files
+      begin
+        Dir.foreach(path) do |file|
+          # Skip hidden files
+          next if file =~ /^\./
+          file_path = File.join(path, file)
+
+          # Skip files that we already have
+          next if self.class.all_paths.include? file_path
+          next if ListedTree.should_exclude? file_path
+
+          add_new_file_or_directory file_path
+        end
+      rescue Errno::ENOENT
+      end
+    end
+
+    def add_new_file_or_directory(file_path)
+      @files << if File.directory? file_path
+                  ListedDirectory.new(file_path, self)
+                else
+                  ListedFile.new(file_path, self)
+                end
+    end
+
+    # Find files that do not exist (anymore) and remove them
+    def remove_not_existing_files
+      files_to_remove = Set.new
+      all_paths = Set.new
+      each_file do |file|
+        file.refresh
+        if file.exists?
+          all_paths << file.path
+        else
+          files_to_remove << file
+          # @tree_signal.call(:remove, file)
+        end
+      end
+      @files -= files_to_remove
+    end
   end
 
   # A tree of files and directory. Can signal added and removed files.
   class ListedTree
     include Enumerable
+    include Callbacks
+    @@exclude_file_list = []
 
     # Create a ListedTree which contains ListedFile and ListedDirectory
     def initialize(exclude_file_list = [])
       @paths = Set.new
       @refresh_signal = Set.new
       @signal_method = method(:signal)
-      @exclude_file_list = exclude_file_list
+      @@exclude_file_list << exclude_file_list
       @too_many_files_signal = Set.new
       @warn_too_many_files = false
       @warn_files_count = 0
     end
 
     # Yield each files and directory at the root of the tree
-    def each(&block)
+    def each_path(&block)
       @paths.each(&block)
       self
+    end
+
+    def paths_count
+      @paths.length
     end
     
     # Add a path: a file or a directory. If it's a directory, all files
     # within this directory are also added
     def add_path(path)
       return unless File.exist? path
-      return if @exclude_file_list.any? {|f| path[-(f.size+1)..-1] == "/#{f}" }
+      return if should_exclude? path
       @paths << if File.directory? path
-                  ListedDirectory.new(path, @exclude_file_list, &@signal_method)
+                  ListedDirectory.new(path)
                 else
-                  ListedFile.new(path, &@signal_method)
+                  ListedFile.new(path)
                 end
       self
     end
@@ -224,7 +230,7 @@ module VimMate
     # Refresh the files from the tree. Inexistent files are removed and
     # new files are added
     def refresh
-      each do |path|
+      each_path do |path|
         path.refresh
       end
       self
@@ -244,7 +250,33 @@ module VimMate
       @too_many_files_signal << block
     end
 
+    def self.should_exclude?(filepath)
+      @@exclude_file_list.any? do |f| 
+        # ends with
+        filepath[-(f.size+1)..-1] == "/#{f}"
+      end
+    end
+    def should_exclude?(filepath)
+      self.class.should_exclude? filepath
+    end
+
+
+    has_callback :after, :removed
+    has_callback :after, :refreshed
+    has_callback :after, :added
+    def self.filter_after_added(file_or_path)
+      if file_or_path.is_a? ListedFile
+        file_or_path
+      else
+        ListedFile.find_by_path file_or_path
+      end
+    end
+    after_added do |file_or_directory|
+      #$stderr.puts "Added #{file_or_directory.path}"
+    end
+
     private
+
 
     # Signal that a file has been added or removed.
     def signal(method, file)

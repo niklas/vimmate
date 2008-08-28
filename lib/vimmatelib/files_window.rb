@@ -393,16 +393,18 @@ module VimMate
         dialog.destroy
       end
 
-      # Register to receive a signal when a file is added or removed
-      @file_tree.add_refresh_signal do |method, file|
-        case method
-        when :add
-          add_to_tree(file)
-        when :remove
-          remove_file_from_tree(file)
-        when :refresh
-          refresh_row_for(file)
-        end
+      # Register to receive a signal when a file is added, removed
+      # or refreshed
+      ListedTree.after_added do |file_or_directory|
+        add_to_tree(file_or_directory)
+        @gtk_filtered_tree_model.refilter
+      end
+      ListedTree.after_removed do |file_or_directory|
+        remove_file_from_tree(file_or_directory)
+        @gtk_filtered_tree_model.refilter
+      end
+      ListedTree.after_refreshed do |file_or_directory|
+        refresh_row_for(file_or_directory)
         @gtk_filtered_tree_model.refilter
       end
     end
