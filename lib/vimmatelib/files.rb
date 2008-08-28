@@ -264,6 +264,13 @@ module VimMate
     has_callback :after, :removed
     has_callback :after, :refreshed
     has_callback :after, :added
+    def self.filter_after_added(file_or_path)
+      if file_or_path.is_a? ListedFile
+        file_or_path
+      else
+        ListedFile.find_by_path file_or_path
+      end
+    end
     after_added do |file_or_directory|
       $stderr.puts "Added #{file_or_directory.path}"
     end
