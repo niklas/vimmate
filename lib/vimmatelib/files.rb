@@ -272,7 +272,7 @@ module VimMate
       end
     end
     after_added do |file_or_directory|
-      $stderr.puts "Added #{file_or_directory.path}"
+      #$stderr.puts "Added #{file_or_directory.path}"
     end
 
     private
