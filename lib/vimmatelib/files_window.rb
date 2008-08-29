@@ -109,7 +109,7 @@ module VimMate
       gtk_filter_box.pack_start(@gtk_file_filter_entry = Gtk::Entry.new, true, true)
       changed_lambda = lambda do
         if gtk_filter_button.active?
-          self.filter = @gtk_file_filter_entry.text
+          @tree.filter = @gtk_file_filter_entry.text
         else
           self.clear_filter
         end
@@ -177,11 +177,6 @@ module VimMate
     # Get the filter: files must contain this string
     def filter
       @tree.filter
-    end
-
-    # Set a filter: files must contain this string
-    def filter=(filter)
-      @tree.filter = filter
     end
 
     # Set the focus to the file filter
