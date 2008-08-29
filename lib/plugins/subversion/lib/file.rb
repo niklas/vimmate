@@ -10,7 +10,7 @@ module VimMate
           status = Subversion.status(@path)
           if @last_status != status
             @last_status = status
-            @tree_signal.call(:refresh, self)
+            ListedTree.refreshed self
           end
           self
         end

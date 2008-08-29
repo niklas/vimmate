@@ -97,6 +97,11 @@ module VimMate
       super(path, parent)
       @files = Set.new
     end
+    
+    # Returns the icon for this file
+    def icon
+      Icons.folder_icon
+    end
 
     # The type of icon to use
     def icon_type

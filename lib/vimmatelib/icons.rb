@@ -69,7 +69,7 @@ module VimMate
       define_method("#{method}_icon") do
         # Load the file
         icon = nil
-        file = File.join(Config.lib_path, "#{method}.png")
+        file = File.join(Config.images_path, "#{method}.png")
         begin
           icon = Gdk::Pixbuf.new(file) if File.exist? file
         rescue StandardError => e

@@ -97,6 +97,10 @@ module VimMate
     def lib_path
       File.dirname(File.expand_path(__FILE__))
     end
+
+    def images_path
+       File.expand_path(File.dirname(__FILE__) + '/../../images')
+    end
     
     private
 
