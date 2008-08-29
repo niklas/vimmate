@@ -249,22 +249,6 @@ module VimMate
     # Create the file tree
     def initialize_file_tree(exclude_file_list)
       @file_tree = ListedTree.new(exclude_file_list)
-
-      @file_tree.add_too_many_files_signal do |nbfiles|
-        dialog = Gtk::MessageDialog.new(nil,
-                                        Gtk::MessageDialog::Flags::MODAL,
-                                        Gtk::MessageDialog::Type::QUESTION,
-                                        Gtk::MessageDialog::ButtonsType::YES_NO,
-                                        "A large number of files will be processed (more than #{nbfiles}). This could take a long time. Continue anyway ?")
-        dialog.set_icon_list(Icons.window_icons)
-        if dialog.run == Gtk::Dialog::RESPONSE_NO
-          puts "\n\nToo many files. The user chose to stop loading. Exiting now.\n\n"
-          exit
-        end
-        dialog.hide
-        dialog.destroy
-      end
-
     end
 
     def file_tree_mutex
