@@ -224,10 +224,12 @@ module VimMate
     # the list is started after the initial add.
     def initial_add(&block)
       @file_tree.initial_add(&block)
+      do_refresh
 
       #TODO add file monitoring with gamin or fam or something like that
       # Launch a timer to refresh the file list
-      Gtk.timeout_add(Config[:files_refresh_interval] * 1000) do 
+      Gtk.timeout_add(Config[:files_refresh_interval] * 10000) do 
+        puts "Auto-refreshing"
         do_refresh
         true
       end
@@ -237,16 +239,11 @@ module VimMate
 
     # Launch the refresh of the tree
     def do_refresh
-      #if @gtk_notebook.page == 0
       Thread.new do
         file_tree_mutex.synchronize do
-          puts "Thread: refreshing file tree"
           @file_tree.refresh
-          puts "Thread: refreshing file tree [finished]"
         end
       end
-      puts "after Thread (refresh)"
-      #  end
     end
 
     # Create the file tree
