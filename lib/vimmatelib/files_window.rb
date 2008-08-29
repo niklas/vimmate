@@ -29,6 +29,7 @@ require 'vimmatelib/files'
 require 'vimmatelib/icons'
 require 'vimmatelib/search_window'
 require 'vimmatelib/file_tree_view'
+require 'vimmatelib/plugins'
 
 module VimMate
 
