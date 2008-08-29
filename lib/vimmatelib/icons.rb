@@ -100,24 +100,39 @@ module VimMate
       end
     end
 
-    def overlay_with(original_name,overlay_name)
-      "#{original_name}_overlayed_with_#{overlay_name}"
+    def overlay_with(original_name,overlay_name=nil,position='south')
+      if overlay_name.nil?
+        original_name
+      else
+        "#{original_name}_#{position}_overlayed_with_#{overlay_name}"
+      end
     end
 
     def overlay_icon(meth)
-      if meth.to_s =~ /^(.*)_overlayed_with_(.*)$/
+      if meth.to_s =~ /^(.*)_(#{Overlays.join('|')})_overlayed_with_(.*)$/
         original = $1
         original_icon = by_name original
-        overlay = $2
+        where = $2
+        overlay = $3
         overlay_icon = by_name overlay
+        case where
+        when 'north'
+          x = y = 1
+        when 'east'
+          x = 7; y = 1
+        when 'south'
+          x = 1; y = 7
+        when 'west'
+          x = y = 7
+        end
         $stderr.puts "Overlaying #{original} with #{overlay}"
         overlayed = original_icon.dup
         overlayed.composite!(
           overlay_icon,
-          0, 0,     # start region to render
-          16, 16,   # width / height
-          0,0,      # offset
-          1.0, 1.0, # scale
+          x, y,     # start region to render
+          8, 8,     # width / height
+          x, y,     # offset
+          0.5, 0.5, # scale
           Gdk::Pixbuf::INTERP_BILINEAR,  # interpolation
           255  # alpha
         )
