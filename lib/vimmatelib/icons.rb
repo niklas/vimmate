@@ -64,28 +64,74 @@ module VimMate
       window_icons
     end
 
-    # Define a method with _icon for each icon's name
-    ICONS_NAME.each do |method|
-      define_method("#{method}_icon") do
-        # Load the file
-        icon = nil
-        file = File.join(Config.images_path, "#{method}.png")
-        begin
-          icon = Gdk::Pixbuf.new(file) if File.exist? file
-        rescue StandardError => e
-          $stderr.puts e.to_s
-          $stderr.puts "Problem loading #{method} icon #{file}"
-        end
-        icon.freeze
-        # Once loaded, we only need a reader
-        self.class.send(:define_method, "#{method}_icon") do
-          icon
-        end
-        icon
+    def method_missing(meth, *args, &block)
+      $stderr.puts "Icon#method_missing: #{meth}"
+      if meth.to_s =~ /_overlayed_with_/
+        overlay_icon(meth, *args)
+      elsif meth.to_s =~ /_icon$/
+        build_icon(meth)
+      else
+        raise NoMethodError, "method not found: #{meth}"
       end
     end
 
+    def by_name(icon_name)
+      send (icon_name =~ /_icon$/) ? icon_name : "#{icon_name}_icon"
+    end
     private
+
+    # Auto-define a method with _icon for each icon's name
+    def build_icon(meth)
+      if meth.to_s =~ /^(.*)_icon$/
+        name = $1
+        path = File.join(Config.images_path, "#{name}.png")
+        if File.exists? path
+          begin
+            icon = Gdk::Pixbuf.new(path) 
+            icon.freeze
+            # Once loaded, we only need a reader
+            self.class.send(:define_method, meth) do
+              icon
+            end
+            return icon
+          rescue StandardError => e
+            $stderr.puts e.to_s
+            $stderr.puts "Problem loading #{name} icon #{path}"
+            raise e
+          end
+        else
+          raise "Icon not found: #{path}"
+        end
+      end
+    end
+
+    def overlay_with(original_name,overlay_name)
+      "#{original_name}_overlayed_with_#{overlay_name}"
+    end
+
+    def overlay_icon(meth)
+      if meth.to_s =~ /^(.*)_overlayed_with_(.*)$/
+        original = $1
+        original_icon = by_name original
+        overlay = $2
+        overlay_icon = by_name overlay
+        $stderr.puts "Overlaying #{original} with #{overlay}"
+        overlayed = original_icon.dup
+        overlayed.composite!(
+          overlay_icon,
+          0, 0,     # start region to render
+          16, 16,   # width / height
+          0,0,      # offset
+          1.0, 1.0, # scale
+          Gdk::Pixbuf::INTERP_BILINEAR,  # interpolation
+          255  # alpha
+        )
+        self.class.send(:define_method, meth) do
+          overlayed
+        end
+        return overlayed
+      end
+    end
 
     # Load the icons for the windows
     def load_window_icons

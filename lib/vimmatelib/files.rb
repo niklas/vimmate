@@ -56,10 +56,11 @@ module VimMate
     def icon_type
       :file
     end
+    alias_method :icon_name, :icon_type
 
     # Returns the icon for this file
     def icon
-      Icons.file_icon
+      Icons.by_name icon_name
     end
 
     # Returns the status text for this file
@@ -88,6 +89,16 @@ module VimMate
     def self.find_by_path(path)
       @@all[path]
     end
+    def self.modify_icon(scope, &block)
+      with = "icon_name_with_#{scope}"
+      without = "icon_name_without_#{scope}"
+      define_method with do
+        block.call(self)
+      end
+      alias_method without, :icon_name
+      alias_method :icon_name, with
+    end
+
   end
 
   # A directory within the tree. Can contain files and other directories.
