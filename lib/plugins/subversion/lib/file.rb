@@ -2,7 +2,17 @@
 
 module VimMate
   module Plugin
-    module SubversionItem
+    module SubversionFile
+      def self.included(base)
+        base.class_eval do
+          include InstanceMethods
+          position = Icons.free_position
+          modify_icon :svn do |file|
+            Icons.overlay_with file.icon_name_without_svn, file.svn_icon, position
+          end
+        end
+        $stderr.puts "Plugin Subversion loaded and applied to #{base}"
+      end
       module InstanceMethods
         # Refresh the file. If the file status has changed, send a refresh
         # signal
@@ -10,13 +20,14 @@ module VimMate
           status = Subversion.status(@path)
           if @last_status != status
             @last_status = status
-            @tree_signal.call(:refresh, self)
+            ListedTree.refreshed self
           end
           self
         end
+
         
         # Return the icon for this file depending on the file status
-        def icon
+        def svn_icon
           status = Subversion.status(@path)
           if @last_status != status
             @last_status = status
@@ -24,16 +35,19 @@ module VimMate
           case status
           when Subversion::UNVERSIONED, Subversion::EXTERNAL,
                Subversion::IGNORED, Subversion::UNKNOWN
-            Icons.send("#{icon_type}_icon")
+            nil
           when Subversion::NONE, Subversion::NORMAL
-            Icons.send("#{icon_type}_green_icon")
-          when Subversion::ADDED, Subversion::DELETED,
-               Subversion::REPLACED, Subversion::MODIFIED
-            Icons.send("#{icon_type}_orange_icon")
-          when Subversion::MISSING, Subversion::MERGED,
-               Subversion::CONFLICTED, Subversion::OBSTRUCTED,
-               Subversion::INCOMPLETE
-            Icons.send("#{icon_type}_red_icon")
+            "svn_normal"
+          when Subversion::ADDED, Subversion::REPLACED
+            'svn_added'
+          when Subversion::DELETED, Subversion::MISSING
+            'svn_deleted'
+          when Subversion::MODIFIED
+            'svn_modified'
+          when Subversion::CONFLICTED
+            'svn_conflict'
+          when Subversion::MERGED, Subversion::OBSTRUCTED, Subversion::INCOMPLETE
+            'svn_readonly'  # FIXME for now, have no better
           end
         end
 

@@ -24,6 +24,7 @@ SOFTWARE.
 require 'gtk2'
 require 'vimmatelib/config'
 require 'vimmatelib/icons'
+require 'gtk_thread_helper'
 
 module VimMate
 
@@ -107,7 +108,7 @@ module VimMate
     def start(start_window)
       gtk_window.show_all
       start_window.start
-      Gtk.main
+      Gtk.main_with_queue
     end
 
   end
