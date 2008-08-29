@@ -184,7 +184,7 @@ module VimMate
     def initialize(exclude_file_list = [])
       @paths = Set.new
       @refresh_signal = Set.new
-      @signal_method = method(:signal)
+      #@signal_method = method(:signal)
       @@exclude_file_list << exclude_file_list
       @too_many_files_signal = Set.new
       @warn_too_many_files = false

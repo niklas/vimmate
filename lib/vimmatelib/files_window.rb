@@ -28,89 +28,45 @@ require 'vimmatelib/config'
 require 'vimmatelib/files'
 require 'vimmatelib/icons'
 require 'vimmatelib/search_window'
+require 'vimmatelib/file_tree_view'
 
 module VimMate
 
   # The window that contains the file tree
   class FilesWindow
-
-    # Column for the file name
-    NAME = 0
-    # Column for the full path of the file
-    PATH = 1
-    # Column for the icon of the file
-    ICON = 2
-    # Column used to sort the files
-    SORT = 3
-    # Column used to store the type of row
-    TYPE = 4
-    # Column used to store the status of the file
-    STATUS = 5
-    # Visiblity of row
-    VISIBLE = 6    
-    # Type of row: file
-    TYPE_FILE = 0
-    # Type of row: directory
-    TYPE_DIRECTORY = 1
-    # Type of row: separator
-    TYPE_SEPARATOR = 2
-
     # Create a FilesWindow
     def initialize(exclude_file_list = [], vim_window = FalseClass)
       @vim_window = vim_window
       @open_signal = Set.new
       @menu_signal = Set.new
       #@expander_signal = Set.new
-
-      @filter_string = ""
       
-      # Tree Store: Filename, Full path, Icon, Sort, Type, Status
-      @gtk_tree_store = Gtk::TreeStore.new(String,
-                                           String,
-                                           Gdk::Pixbuf,
-                                           String,
-                                           Fixnum,
-                                           String,
-                                           FalseClass)
-      @gtk_tree_store.set_sort_column_id(SORT)
+      # FIXME find a better place for that
+      Thread.abort_on_exception = true
 
-      # Filtered Tree Store
-      @gtk_filtered_tree_model = Gtk::TreeModelFilter.new(@gtk_tree_store)
-      @gtk_filtered_tree_model.set_visible_func do |model, iter|
-        if @filter_string.nil? or @filter_string.empty?
-          true
-        elsif iter[TYPE] == TYPE_SEPARATOR
-          false
-        else
-          iter[VISIBLE]
-        end
-      end
-      
-      # Tree View
-      @gtk_tree_view = Gtk::TreeView.new(@gtk_filtered_tree_model)
-      @gtk_tree_view.selection.mode = Gtk::SELECTION_SINGLE
-      @gtk_tree_view.headers_visible = Config[:file_headers_visible]
-      @gtk_tree_view.hover_selection = Config[:file_hover_selection]
+      @tree = FileTreeView.new
 
       # Double-click, Enter, Space: Signal to open the file
-      @gtk_tree_view.signal_connect("row-activated") do |view, path, column|
-        path = @gtk_filtered_tree_model.get_iter(path)[PATH]
-        @open_signal.each do |signal|
-          signal.call(path,
-                      Config[:files_default_open_in_tabs] ? :tab_open : :open)
+      @tree.view.signal_connect("row-activated") do |view, path, column|
+        if row = @tree.find_row_by_iter_path(path)
+          path = row.path
+          @open_signal.each do |signal|
+            signal.call(path,
+                        Config[:files_default_open_in_tabs] ? :tab_open : :open)
+          end
         end
       end
 
       # Left-click: Select and Signal to open the menu
-      @gtk_tree_view.signal_connect("button_press_event") do |widget, event|
+      @tree.view.signal_connect("button_press_event") do |widget, event|
         if event.kind_of? Gdk::EventButton and event.button == 3
-          path = @gtk_tree_view.get_path_at_pos(event.x, event.y)
-          @gtk_tree_view.selection.select_path(path[0]) if path
+          path = @tree.view.get_path_at_pos(event.x, event.y)
+          @tree.view.selection.select_path(path[0]) if path
 
-          selected = @gtk_tree_view.selection.selected
+          selected = @tree.view.selection.selected
           if selected
             @menu_signal.each do |signal|
-              signal.call(selected[PATH])
+              signal.call(selected.path)
             end
           end
         end
@@ -122,61 +78,27 @@ module VimMate
 
       # When a selection is changed in the tree view, we change the label
       # to show the path of the file
-      @gtk_tree_view.selection.signal_connect("changed") do
+      @tree.view.selection.signal_connect("changed") do
         gtk_label.text = ""
-        next if (selected_row = @gtk_tree_view.selection.selected).nil?
-        gtk_label.text = File.join(File.dirname(selected_row[PATH]), selected_row[NAME])
+        if selected = @tree.selected_row
+          gtk_label.text = File.join(selected.path,selected.name)
+        end
       end
       
       # Same thing as Left-click, but with the keyboard
-      @gtk_tree_view.signal_connect("popup_menu") do
-        selected = @gtk_tree_view.selection.selected
-        if selected
+      @tree.view.signal_connect("popup_menu") do
+        if selected = @tree.selected_row
           @menu_signal.each do |signal|
-            signal.call(selected[PATH])
+            signal.call(selected.path)
           end
         end
       end
 
-      # Separator between directories
-      @gtk_tree_view.set_row_separator_func do |model, iter|
-        iter[TYPE] == TYPE_SEPARATOR
-      end
-
-      # Add the columns
-      column = Gtk::TreeViewColumn.new
-      column.title = "Files"
-
-      # Icon
-      icon_cell_renderer = Gtk::CellRendererPixbuf.new
-      column.pack_start(icon_cell_renderer, false)
-      column.set_attributes(icon_cell_renderer, :pixbuf => ICON)
-
-      # File name
-      text_cell_renderer = Gtk::CellRendererText.new
-      if Config[:files_use_ellipsis]
-        text_cell_renderer.ellipsize = Pango::Layout::EllipsizeMode::MIDDLE
-      end
-      column.pack_start(text_cell_renderer, true)
-      column.set_attributes(text_cell_renderer, :text => NAME)
-      
-      # Status
-      if Config[:files_show_status]
-        text_cell_renderer2 = Gtk::CellRendererText.new
-        if Config[:files_use_ellipsis]
-          text_cell_renderer2.ellipsize = Pango::Layout::EllipsizeMode::END
-        end
-        column.pack_start(text_cell_renderer2, true)
-        column.set_attributes(text_cell_renderer2, :text => STATUS)
-      end
-      
-      @gtk_tree_view.append_column(column)
-      
       # Put the tree view in a scroll window
       @gtk_scrolled_window = Gtk::ScrolledWindow.new
       @gtk_scrolled_window.set_policy(Gtk::POLICY_AUTOMATIC,
                                       Gtk::POLICY_AUTOMATIC)
-      @gtk_scrolled_window.add(@gtk_tree_view)
+      @gtk_scrolled_window.add(@tree.view)
       
       # Set the default size for the file list
       @gtk_scrolled_window.set_size_request(Config[:files_opened_width], -1)
@@ -256,57 +178,12 @@ module VimMate
 
     # Get the filter: files must contain this string
     def filter
-      @filter_string
+      @tree.filter
     end
 
     # Set a filter: files must contain this string
     def filter=(filter)
-      if filter.empty?
-        clear_filter
-        return
-      end
-      @filter_string = filter
-
-      # Filter tree view so only directories and separators with matching
-      # elements are set visible
-      visible_path = Hash.new(false)
-
-      @gtk_tree_store.each do |model,path,iter|
-        if iter[NAME] and iter[TYPE] == TYPE_FILE
-          if iter[VISIBLE] = iter[NAME].index(@filter_string)
-            begin
-              visible_path[path.to_s] = true
-            end while path.up!
-          end
-        else
-          iter[VISIBLE] = true
-          if iter[TYPE] == TYPE_SEPARATOR
-            visible_path[path.to_s] = true
-          end
-        end
-      end
-
-      @gtk_tree_store.each do |model,path,iter|
-        if not visible_path[path.to_s]
-          iter[VISIBLE] = false
-          if iter[TYPE] == TYPE_DIRECTORY and Config[:file_directory_separator]
-            if iter.next!
-              iter[VISIBLE] = false
-            end
-          end
-        end
-      end
-
-      @gtk_filtered_tree_model.refilter
-      @gtk_tree_view.expand_all if Config[:files_auto_expand_on_filter]
-    end
-
-    # Clear the filter
-    def clear_filter
-      @filter_string = ""
-      @gtk_filtered_tree_model.refilter
-      @gtk_tree_view.collapse_all if Config[:files_auto_expand_on_filter]
-      filter
+      @tree.filter = filter
     end
 
     # Set the focus to the file filter
@@ -316,7 +193,7 @@ module VimMate
 
     # Set the focus to the file list
     def focus_file_list
-      @gtk_tree_view.has_focus = true if @gtk_tree_view
+      @tree.view.has_focus = true if @tree.view
     end
 
     # Set the focus to the search file list
@@ -326,8 +203,8 @@ module VimMate
 
     # Expand the first row of the file tree
     def expand_first_row
-      @gtk_tree_view.collapse_all
-      @gtk_tree_view.expand_row(Gtk::TreePath.new("0"), false)
+      @tree.view.collapse_all
+      @tree.view.expand_row(Gtk::TreePath.new("0"), false)
     end
 
     # Add a block that will be called when the user choose to open a file
@@ -393,67 +270,10 @@ module VimMate
         dialog.destroy
       end
 
-      # Register to receive a signal when a file is added, removed
-      # or refreshed
-      ListedTree.after_added do |file_or_directory|
-        add_to_tree(file_or_directory)
-        @gtk_filtered_tree_model.refilter
-      end
-      ListedTree.after_removed do |file_or_directory|
-        remove_file_from_tree(file_or_directory)
-        @gtk_filtered_tree_model.refilter
-      end
-      ListedTree.after_refreshed do |file_or_directory|
-        refresh_row_for(file_or_directory)
-        @gtk_filtered_tree_model.refilter
-      end
     end
 
-    # Add a file to the tree
-    def add_to_tree(file)
-      parent = file.parent ? file.parent.row : nil
-      # If we need a separator and it's a directory, we add it
-      if Config[:file_directory_separator] and file.instance_of? ListedDirectory
-        new_row = @gtk_tree_store.append(parent)
-        new_row[TYPE] = TYPE_SEPARATOR
-        new_row[SORT] = "1-#{file.path}-2"
-      end
-      # Add the row for the file
-      new_row = @gtk_tree_store.append(parent)
-      new_row[NAME] = file.name
-      new_row[PATH] = file.path
-      new_row[ICON] = file.icon
-      new_row[STATUS] = file.status_text if Config[:files_show_status]
-      file.row = new_row # so will find it later fast
-      if file.instance_of? ListedDirectory
-        new_row[SORT] = "1-#{file.path}-1"
-        new_row[TYPE] = TYPE_DIRECTORY
-      else
-        new_row[SORT] = "2-#{file.path}-1"
-        new_row[TYPE] = TYPE_FILE
-      end
-    end
-
-    # A file is removed. Find it and remove it
-    def remove_file_from_tree(file)
-      to_remove = []
-      if iter = file.row
-        to_remove << iter
-        if iter.next! and iter[TYPE] == TYPE_SEPARATOR
-          to_remove << iter
-        end
-      end
-      to_remove.each do |iter|
-        @gtk_tree_store.remove(iter)
-      end
-    end
-
-    # Called when the status of the file has changed
-    def refresh_row_for(file)
-      if iter = file.row
-        iter[ICON] = file.icon
-        iter[STATUS] = file.status_text if Config[:files_show_status]
-      end
+    def file_tree_mutex
+      @file_tree_mutex ||= Mutex.new
     end
   end
 end
