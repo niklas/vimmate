@@ -34,17 +34,7 @@ module VimMate
     # The size for the icons of the windows
     WINDOW_ICON_SIZES = [16, 32, 48].freeze
 
-    # Name of the icons to load. Will create methods named after
-    # the icon's name, with _icon: folder_icon for example.
-    ICONS_NAME = [:folder, :file].collect do |f|
-      ["", :green, :orange, :red].collect do |c|
-        if c.to_s.empty?
-          f.to_sym
-        else
-          "#{f}_#{c}".to_sym
-        end
-      end
-    end.flatten.freeze
+    Overlays = %w(north east south west)
 
     # Create the Icons class. Cannot be called directly
     def initialize
@@ -73,6 +63,11 @@ module VimMate
       else
         raise NoMethodError, "method not found: #{meth}"
       end
+    end
+
+    def free_position
+      @free_overlays ||= Overlays.dup
+      @free_overlays.pop
     end
 
     def by_name(icon_name)
