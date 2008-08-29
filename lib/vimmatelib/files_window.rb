@@ -149,8 +149,6 @@ module VimMate
       end
 
       gtk_window.border_width = 3
-
-      @file_tree_mutex = Mutex.new
     end
 
     # Recursively add a path at the root of the tree
@@ -245,10 +243,15 @@ module VimMate
     # Launch the refresh of the tree
     def do_refresh
       #if @gtk_notebook.page == 0
-        @file_tree_mutex.synchronize do
+      Thread.new do
+        file_tree_mutex.synchronize do
+          puts "Thread: refreshing file tree"
           @file_tree.refresh
-      #  end
+          puts "Thread: refreshing file tree [finished]"
+        end
       end
+      puts "after Thread (refresh)"
+      #  end
     end
 
     # Create the file tree
