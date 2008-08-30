@@ -34,7 +34,7 @@ module VimMate
     # The size for the icons of the windows
     WINDOW_ICON_SIZES = [16, 32, 48].freeze
 
-    Overlays = %w(north east south west)
+    Overlays = %w(scm progress)
 
     # Create the Icons class. Cannot be called directly
     def initialize
@@ -116,13 +116,13 @@ module VimMate
         overlay = $3
         overlay_icon = by_name overlay
         case where
-        when 'north'
+        when 'progress'
           x = y = 1
-        when 'east'
+        when 'tr'
           x = 7; y = 1
-        when 'south'
+        when 'scm'
           x = 1; y = 7
-        when 'west'
+        when 'br'
           x = y = 7
         end
         $stderr.puts "Overlaying #{original} with #{overlay}"
