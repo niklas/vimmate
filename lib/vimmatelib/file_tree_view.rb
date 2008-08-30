@@ -68,7 +68,7 @@ module VimMate
     @@columns = []
     def self.column(label,type)
       @@columns << [label.to_sym, type]
-      class_eval %Q[#{label.to_s.upcase} = #{@@columns.length-1}]
+      const_set label.to_s.upcase, @@columns.length-1
     end
     def columns
       @@columns
