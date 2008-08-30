@@ -55,7 +55,6 @@ module VimMate
     end
 
     def method_missing(meth, *args, &block)
-      $stderr.puts "Icon#method_missing: #{meth}"
       if meth.to_s =~ /_overlayed_with_/
         overlay_icon(meth, *args)
       elsif meth.to_s =~ /_icon$/
@@ -125,7 +124,6 @@ module VimMate
         when 'br'
           x = y = 7
         end
-        $stderr.puts "Overlaying #{original} with #{overlay}"
         overlayed = original_icon.dup
         overlayed.composite!(
           overlay_icon,

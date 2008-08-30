@@ -10,7 +10,6 @@ module VimMate
             Icons.overlay_with file.icon_name_without_svn, file.svn_icon, 'scm'
           end
         end
-        $stderr.puts "Plugin Subversion loaded and applied to #{base}"
       end
       module InstanceMethods
         # Refresh the file. If the file status has changed, send a refresh
