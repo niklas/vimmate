@@ -14,13 +14,36 @@ module VimMate
       @tree = tree
     end
 
-    def method_missing(meth)
+    def method_missing(meth, *args, &block)
       tree_columns_labels = tree.columns.collect { |c| c[0] }
       if id = tree_columns_labels.index(meth.to_sym)
         iter[id]
+      elsif meth.to_s =~ /^(.*)=$/ 
+        if id = tree_columns_labels.index($1.to_sym)
+          iter[id] = args.first
+        else
+          raise NoMethodError, "illegal setter: #{meth}"
+        end
       else
         raise NoMethodError, "could not auto-respond to #{meth}"
       end
+    end
+
+    def show!
+      visible = true
+    end
+    def hide!
+      visible = false
+    end
+
+    def file?
+      referenced_type == TYPE_FILE
+    end
+    def directory?
+      referenced_type == TYPE_DIRECTORY
+    end
+    def separator?
+      referenced_type == TYPE_SEPARATOR
     end
   end
   class TreeView
@@ -37,7 +60,7 @@ module VimMate
     attr_reader :filter_string
     column :sort, String
     column :visible, FalseClass
-    column :type, Fixnum
+    column :referenced_type, Fixnum
     alias :filter :filter_string
     def initialize(*args)
       @store = Gtk::TreeStore.new *@@columns.collect{|c| c[1] }
@@ -61,7 +84,7 @@ module VimMate
       view.headers_visible = Config[:file_headers_visible]
       view.hover_selection = Config[:file_hover_selection]
       view.set_row_separator_func do |model, iter|
-        iter[TYPE] == TYPE_SEPARATOR
+        iter[REFERENCED_TYPE] == TYPE_SEPARATOR
       end
     end
 
@@ -193,7 +216,7 @@ module VimMate
       # If we need a separator and it's a directory, we add it
       if Config[:file_directory_separator] and file.instance_of? ListedDirectory
         new_row = store.append(parent)
-        new_row[TYPE] = TYPE_SEPARATOR
+        new_row[REFERENCED_TYPE] = TYPE_SEPARATOR
         new_row[SORT] = "1-#{file.path}-2"
       end
       # Add the row for the file
@@ -207,7 +230,7 @@ module VimMate
       to_remove = []
       if iter = file.row
         to_remove << iter
-        if iter.next! and iter[TYPE] == TYPE_SEPARATOR
+        if iter.next! and iter[REFERENCED_TYPE] == TYPE_SEPARATOR
           to_remove << iter
         end
       end
@@ -232,10 +255,10 @@ module VimMate
       row[STATUS] = file.status_text if Config[:files_show_status]
       if file.instance_of? ListedDirectory
         row[SORT] = "1-#{file.path}-1"
-        row[TYPE] = TYPE_DIRECTORY
+        row[REFERENCED_TYPE] = TYPE_DIRECTORY
       else
         row[SORT] = "2-#{file.path}-1"
-        row[TYPE] = TYPE_FILE
+        row[REFERENCED_TYPE] = TYPE_FILE
       end
       row[VISIBLE] = iter_visible? row
     end
