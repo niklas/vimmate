@@ -246,10 +246,7 @@ module VimMate
       end
       # Add the row for the file
       new_row = store.append(parent)
-      m = store
-      pa = new_row.path
-      $stderr.puts "creating reference to #{m} for '#{file.path}': #{pa}"
-      file.reference = Gtk::TreeRowReference.new(m, pa) # so will find it later fast
+      file.reference = Gtk::TreeRowReference.new(store, new_row.path) # so will find it later fast
       fill_row_with_file(new_row, file)
     end
 

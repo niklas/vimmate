@@ -80,7 +80,7 @@ module VimMate
       end
 
       @gtk_menu.append(delete = Gtk::ImageMenuItem.new(Gtk::Stock::DELETE))
-      delete.signal_connect("activate") do
+      delete.signal_connect("activate") do  # FIXME segfaults sometimes
         menu_delete
       end
 
