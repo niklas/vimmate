@@ -225,6 +225,10 @@ module VimMate
     # the list is started after the initial add.
     def initial_add(&block)
       @file_tree.initial_add(&block)
+      file_tree_mutex.synchronize do
+        @file_tree.refresh(false)
+      end
+      expand_first_row
       do_refresh
 
       #TODO add file monitoring with gamin or fam or something like that
@@ -239,10 +243,10 @@ module VimMate
     private
 
     # Launch the refresh of the tree
-    def do_refresh
+    def do_refresh(recurse=true)
       Thread.new do
         file_tree_mutex.synchronize do
-          @file_tree.refresh
+          @file_tree.refresh(recurse)
         end
       end
     end
