@@ -49,7 +49,7 @@ module VimMate
 
       # Double-click, Enter, Space: Signal to open the file
       @tree.view.signal_connect("row-activated") do |view, path, column|
-        if row = @tree.find_row_by_iter_path(path)
+        if row = @tree.find_row_by_iter_path(path) and row.file?
           path = row.path
           @open_signal.each do |signal|
             signal.call(path,
@@ -64,8 +64,7 @@ module VimMate
           path = @tree.view.get_path_at_pos(event.x, event.y)
           @tree.view.selection.select_path(path[0]) if path
 
-          selected = @tree.view.selection.selected
-          if selected
+          if selected = @tree.view.selection.selected and selected.file_or_directory?
             @menu_signal.each do |signal|
               signal.call(selected.path)
             end
@@ -81,14 +80,14 @@ module VimMate
       # to show the path of the file
       @tree.view.selection.signal_connect("changed") do
         gtk_label.text = ""
-        if selected = @tree.selected_row
+        if selected = @tree.selected_row and selected.file_or_directory?
           gtk_label.text = File.join(selected.path,selected.name)
         end
       end
       
       # Same thing as Left-click, but with the keyboard
       @tree.view.signal_connect("popup_menu") do
-        if selected = @tree.selected_row
+        if selected = @tree.selected_row and selected.file_or_directory?
           @menu_signal.each do |signal|
             signal.call(selected.path)
           end

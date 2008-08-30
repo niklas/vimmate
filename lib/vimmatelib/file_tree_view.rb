@@ -7,6 +7,8 @@ module VimMate
   TYPE_DIRECTORY = 1
   # Type of row: separator
   TYPE_SEPARATOR = 2
+  # Type of row: message ("nothing found")
+  TYPE_MESSAGE = 3
   class TreeViewRow
     attr_reader :tree, :iter
     def initialize(iter,tree)
@@ -42,8 +44,14 @@ module VimMate
     def directory?
       referenced_type == TYPE_DIRECTORY
     end
+    def file_or_directory?
+      file? || directory?
+    end
     def separator?
       referenced_type == TYPE_SEPARATOR
+    end
+    def message?
+      referenced_type == TYPE_MESSAGE
     end
   end
   class TreeView
@@ -61,17 +69,26 @@ module VimMate
     column :sort, String
     column :visible, FalseClass
     column :referenced_type, Fixnum
+    column :name, String
     alias :filter :filter_string
     def initialize(*args)
       @store = Gtk::TreeStore.new *@@columns.collect{|c| c[1] }
       @sort_column = @@columns.index(:sort) || 0 || 
         raise(ArgumentError, 'no columns specified')
       @store.set_sort_column_id(sort_column)
+      @message_row = store.append(nil)
+        @message_row[REFERENCED_TYPE] = TYPE_MESSAGE
+        @message_row[NAME] = "nothing found"
       @model = Gtk::TreeModelFilter.new(@store)
       @filter_string = ""
+      @found_count = -1
       model.set_visible_func do |model,row|
-        if !filter?
+        if row[REFERENCED_TYPE] == TYPE_MESSAGE
+          @found_count == 0
+        elsif !filter?
           true
+        elsif row[REFERENCED_TYPE] == TYPE_SEPARATOR
+          row[VISIBLE]
         else
           row[VISIBLE]
         end
@@ -100,7 +117,6 @@ module VimMate
       !filter_string.nil? and !filter_string.empty?
     end
 
-    protected
     def row_for_iter(iter)
       if iter
         TreeViewRow.new(iter, self)
@@ -114,6 +130,7 @@ module VimMate
     # the previous collapse state
     def clear_filter
       @filter_string = ''
+      @found_count = -1
       model.refilter
       view.collapse_all if Config[:files_auto_expand_on_filter]
       filter
@@ -123,11 +140,13 @@ module VimMate
     # elements are set visible
     def apply_filter
       visible_path = Hash.new(false)
+      @found_count = 0
 
       store.each do |model,path,iter|
         row = row_for_iter(iter)
         if row.file? # show files if name matches filter
           if row_visible? row
+            @found_count += 1
             # recursivly show parent folders
             begin
               visible_path[path.to_s] = true
@@ -172,7 +191,6 @@ module VimMate
     end
   end
   class FileTreeView < TreeView
-    column :name, String
     column :path, String
     column :icon, Gdk::Pixbuf
     column :status, String
