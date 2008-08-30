@@ -32,10 +32,20 @@ module VimMate
     end
 
     def show!
-      visible = true
+      self.visible = true
+      if directory? and Config[:file_directory_separator]
+        if iter.next!
+          tree.row_for_iter(iter).show!
+        end
+      end
     end
     def hide!
-      visible = false
+      self.visible = false
+      if directory? and Config[:file_directory_separator]
+        if iter.next!
+          tree.row_for_iter(iter).hide!
+        end
+      end
     end
 
     def file?
@@ -158,19 +168,9 @@ module VimMate
       store.each do |model,path,iter|
         row = row_for_iter(iter)
         if visible_path[path.to_s]
-          row.visible = true
-          if row.directory? and Config[:file_directory_separator]
-            if iter.next!
-              row_for_iter(iter).visible = true
-            end
-          end
+          row.show!
         else
-          row.visible = false
-          if row.directory? and Config[:file_directory_separator]
-            if iter.next!
-              row_for_iter(iter).visible = false
-            end
-          end
+          row.hide!
         end
       end
 
