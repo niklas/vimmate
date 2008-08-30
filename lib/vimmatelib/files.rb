@@ -140,7 +140,6 @@ module VimMate
       add_new_files
       # refresh subdirs. files must not be refreshed this way
       each_directory do |dir|
-        sleep 0.400
         dir.refresh
       end if recurse
 
