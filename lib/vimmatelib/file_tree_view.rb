@@ -254,15 +254,13 @@ module VimMate
     def remove_file_from_tree(file)
       to_remove = []
       if iter = row_for(file)
-        to_remove << iter
-        if iter.next! and iter[REFERENCED_TYPE] == TYPE_SEPARATOR
-          to_remove << iter
+        store.remove(iter)
+        # auto-skips to the next
+        if iter and iter[REFERENCED_TYPE] == TYPE_SEPARATOR
+          store.remove(iter)
         end
       end
-      to_remove.each do |iter|
-        file.reference = nil
-        store.remove(iter)
-      end
+      file.reference = nil
     end
 
     # Called when the status of the file has changed
