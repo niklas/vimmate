@@ -72,8 +72,6 @@ module VimMate
       model.set_visible_func do |model,row|
         if !filter?
           true
-        elsif row[TYPE] == TYPE_SEPERATOR
-          false
         else
           row[VISIBLE]
         end
@@ -127,26 +125,31 @@ module VimMate
       visible_path = Hash.new(false)
 
       store.each do |model,path,iter|
-        if iter[NAME] and iter[TYPE] == TYPE_FILE
-          if iter[VISIBLE] = iter_visible?(iter)
+        row = row_for_iter(iter)
+        if row.file? # show files if name matches filter
+          if row_visible? row
+            # recursivly show parent folders
             begin
               visible_path[path.to_s] = true
             end while path.up!
-          end
-        else
-          iter[VISIBLE] = true
-          if iter[TYPE] == TYPE_SEPARATOR
-            visible_path[path.to_s] = true
           end
         end
       end
 
       store.each do |model,path,iter|
-        if not visible_path[path.to_s]
-          iter[VISIBLE] = false
-          if iter[TYPE] == TYPE_DIRECTORY and Config[:file_directory_separator]
+        row = row_for_iter(iter)
+        if visible_path[path.to_s]
+          row.visible = true
+          if row.directory? and Config[:file_directory_separator]
             if iter.next!
-              iter[VISIBLE] = false
+              row_for_iter(iter).visible = true
+            end
+          end
+        else
+          row.visible = false
+          if row.directory? and Config[:file_directory_separator]
+            if iter.next!
+              row_for_iter(iter).visible = false
             end
           end
         end
@@ -159,10 +162,13 @@ module VimMate
     # if NAME contains @filter_string
     def iter_visible?(iter)
       if filter?
-        iter[VISIBLE] = iter[NAME].index(filter_string)
+        row_visible? row_for_iter(iter)
       else
         true
       end
+    end
+    def row_visible? row
+      row.name && row.name.index(filter_string)
     end
   end
   class FileTreeView < TreeView
