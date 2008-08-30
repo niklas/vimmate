@@ -48,15 +48,14 @@ module VimMate
 
     # Refresh the file. Doesn't do anything since it's the directory
     # that does the job.
-    def refresh
+    def refresh(*args)
       self
     end
 
     # The type of icon to use
-    def icon_type
+    def icon_name
       :file
     end
-    alias_method :icon_name, :icon_type
 
     # Returns the icon for this file
     def icon
@@ -107,16 +106,16 @@ module VimMate
     def initialize(path, parent = nil)
       super(path, parent)
       @files = Set.new
+      @traversed = false
     end
     
-    # Returns the icon for this file
-    def icon
-      Icons.folder_icon
-    end
-
     # The type of icon to use
-    def icon_type
-      :folder
+    def icon_name
+      if @traversed
+        :folder
+      else
+        Icons.overlay_with 'folder', 'processing', 'progress' 
+      end
     end    
 
     # Yield each files and directory within this directory
@@ -135,15 +134,17 @@ module VimMate
 
     # Refresh the files from this directory. If it doesn't exist, the
     # file is removed. If it didn't exist before, the file is added.
-    def refresh
+    def refresh(recurse=true)
       super
       remove_not_existing_files
       add_new_files
       # refresh subdirs. files must not be refreshed this way
       each_directory do |dir|
+        sleep 0.400
         dir.refresh
-      end
+      end if recurse
 
+      ListedTree.refreshed self
       self
     end
 
@@ -163,6 +164,7 @@ module VimMate
         end
       rescue Errno::ENOENT
       end
+      @traversed = true
     end
 
     def add_new_file_or_directory(file_path)
@@ -245,9 +247,9 @@ module VimMate
 
     # Refresh the files from the tree. Inexistent files are removed and
     # new files are added
-    def refresh
+    def refresh(recurse=true)
       each_path do |path|
-        path.refresh
+        path.refresh(recurse)
       end
       self
     end

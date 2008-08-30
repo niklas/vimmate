@@ -6,9 +6,8 @@ module VimMate
       def self.included(base)
         base.class_eval do
           include InstanceMethods
-          position = Icons.free_position
           modify_icon :svn do |file|
-            Icons.overlay_with file.icon_name_without_svn, file.svn_icon, position
+            Icons.overlay_with file.icon_name_without_svn, file.svn_icon, 'scm'
           end
         end
         $stderr.puts "Plugin Subversion loaded and applied to #{base}"
