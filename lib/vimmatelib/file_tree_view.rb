@@ -105,8 +105,7 @@ module VimMate
 
       store.each do |model,path,iter|
         if iter[NAME] and iter[TYPE] == TYPE_FILE
-          # if NAME contains @filter_string
-          if iter[VISIBLE] = iter[NAME].index(filter_string)
+          if iter[VISIBLE] = iter_visible?(iter)
             begin
               visible_path[path.to_s] = true
             end while path.up!
@@ -133,6 +132,15 @@ module VimMate
       model.refilter
       view.expand_all if Config[:files_auto_expand_on_filter]
     end
+
+    # if NAME contains @filter_string
+    def iter_visible?(iter)
+      if filter?
+        iter[VISIBLE] = iter[NAME].index(filter_string)
+      else
+        true
+      end
+    end
   end
   class FileTreeView < TreeView
     column :name, String
@@ -149,19 +157,16 @@ module VimMate
       listed_tree.after_added do |file_or_directory|
         Gtk.queue do
           add_to_tree(file_or_directory)
-          model.refilter
         end
       end
       listed_tree.after_removed do |file_or_directory|
         Gtk.queue do
           remove_file_from_tree(file_or_directory)
-          model.refilter
         end
       end
       listed_tree.after_refreshed do |file_or_directory|
         Gtk.queue do
           refresh_row_for(file_or_directory)
-          model.refilter
         end
       end
     end
@@ -213,9 +218,10 @@ module VimMate
 
     # Called when the status of the file has changed
     def refresh_row_for(file)
-      if iter = file.row
-        iter[ICON] = file.icon
-        iter[STATUS] = file.status_text if Config[:files_show_status]
+      if row = file.row
+        row[ICON] = file.icon
+        row[STATUS] = file.status_text if Config[:files_show_status]
+        row[VISIBLE] = iter_visible? row
       end
     end
     def fill_row_for(file)
@@ -231,6 +237,7 @@ module VimMate
         row[SORT] = "2-#{file.path}-1"
         row[TYPE] = TYPE_FILE
       end
+      row[VISIBLE] = iter_visible? row
     end
 
     private

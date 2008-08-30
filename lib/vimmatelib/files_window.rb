@@ -233,7 +233,7 @@ module VimMate
 
       #TODO add file monitoring with gamin or fam or something like that
       # Launch a timer to refresh the file list
-      Gtk.timeout_add(Config[:files_refresh_interval] * 10000) do 
+      Gtk.timeout_add(Config[:files_refresh_interval] * 100000) do 
         puts "Auto-refreshing"
         do_refresh
         true
@@ -247,6 +247,7 @@ module VimMate
       Thread.new do
         file_tree_mutex.synchronize do
           @file_tree.refresh(recurse)
+          @tree.model.refilter
         end
       end
     end
