@@ -31,7 +31,7 @@ module VimMate
   class ListedFile
     @@all_by_path = Hash.new
     attr_reader :name, :path, :parent
-    attr_accessor :row
+    attr_accessor :reference
 
     # Create a ListedFile from a path and an optional parent ListedDirectory.
     def initialize(new_path, parent = nil)

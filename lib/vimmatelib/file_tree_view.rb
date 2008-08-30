@@ -236,7 +236,8 @@ module VimMate
 
     # Add a file to the tree
     def add_to_tree(file)
-      parent = file.parent ? file.parent.row : nil
+      return if row_for(file)
+      parent = file.parent ? row_for(file.parent) : nil
       # If we need a separator and it's a directory, we add it
       if Config[:file_directory_separator] and file.instance_of? ListedDirectory
         new_row = store.append(parent)
@@ -245,34 +246,38 @@ module VimMate
       end
       # Add the row for the file
       new_row = store.append(parent)
-      file.row = new_row # so will find it later fast
-      fill_row_for(file)
+      m = store
+      pa = new_row.path
+      $stderr.puts "creating reference to #{m} for '#{file.path}': #{pa}"
+      file.reference = Gtk::TreeRowReference.new(m, pa) # so will find it later fast
+      fill_row_with_file(new_row, file)
     end
 
     # A file is removed. Find it and remove it
     def remove_file_from_tree(file)
       to_remove = []
-      if iter = file.row
+      if iter = row_for(file)
         to_remove << iter
         if iter.next! and iter[REFERENCED_TYPE] == TYPE_SEPARATOR
           to_remove << iter
         end
       end
       to_remove.each do |iter|
+        file.reference = nil
         store.remove(iter)
       end
     end
 
     # Called when the status of the file has changed
     def refresh_row_for(file)
-      if row = file.row
+      if row = row_for(file)
         row[ICON] = file.icon
         row[STATUS] = file.status_text if Config[:files_show_status]
         row[VISIBLE] = iter_visible? row
       end
     end
-    def fill_row_for(file)
-      row = file.row
+
+    def fill_row_with_file(row, file)
       row[NAME] = file.name
       row[PATH] = file.path
       row[ICON] = file.icon
@@ -285,6 +290,16 @@ module VimMate
         row[REFERENCED_TYPE] = TYPE_FILE
       end
       row[VISIBLE] = iter_visible? row
+    end
+
+    def fill_row_for(file)
+      fill_row_with_file row_for(file), file
+    end
+
+    def row_for(file)
+      if file.reference
+        store.get_iter(file.reference.path)
+      end
     end
 
     private
