@@ -64,7 +64,7 @@ module VimMate
           path = @tree.view.get_path_at_pos(event.x, event.y)
           @tree.view.selection.select_path(path[0]) if path
 
-          if selected = @tree.view.selection.selected and selected.file_or_directory?
+          if selected = @tree.selected_row and selected.file_or_directory?
             @menu_signal.each do |signal|
               signal.call(selected.path)
             end
