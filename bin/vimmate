@@ -31,12 +31,11 @@ module VimMate
 end
 
 # Find the lib directory based on the path of this file
-lib_dir = File.join(File.dirname(File.expand_path($0)), "../lib")
+lib_dir = File.join(File.dirname(__FILE__), "../lib")
 vimmate_lib_dir = File.join(lib_dir, "vimmatelib")
 # Add the lib directory in Ruby's search path
-if File.directory? vimmate_lib_dir
-  $:.unshift(lib_dir)
-end
+$:.unshift(lib_dir) if File.directory? lib_dir
+$:.unshift(vimmate_lib_dir) if File.directory? vimmate_lib_dir
 
 require 'rubygems'
 
