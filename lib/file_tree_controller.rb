@@ -1,4 +1,6 @@
-require 'gtk2'
+require 'tree_controller_definitions'
+require 'tree_controller'
+require 'listed_directory'
 module VimMate
   class FileTreeController < TreeController
     attr_reader :references
@@ -31,9 +33,19 @@ module VimMate
 
     def selected_row
       if iter = view.selection.selected
-        row_for_iter(iter)
+        item_for iter
       end
     end
+
+    # TODO handle initial adding
+    def initial_add(&block)
+      block.call
+    end
+
+    def <<(full_file_path)
+      create_item_for(full_file_path) unless references.has_key?(full_file_path)
+    end
+
 
     private
     # Clear the filter, show all rows in tree and try to re-construct
@@ -69,7 +81,7 @@ module VimMate
 
     def each
       store.each do |model,path,iter|
-        yield row_for(iter)
+        yield item_for(iter)
       end
     end
 
@@ -79,7 +91,7 @@ module VimMate
       view.headers_visible = Config[:file_headers_visible]
       view.hover_selection = Config[:file_hover_selection]
       view.set_row_separator_func do |model, iter|
-        row = row_for(iter)
+        row = item_for(iter)
         row.separator?
       end
     end
@@ -90,7 +102,7 @@ module VimMate
     end
 
     def initialize_store
-      @store = Gtk::TreeStore.new ListedFile.columns_types
+      @store = Gtk::TreeStore.new *ListedFile.columns_types
       @sort_column = ListedFile.columns_labels.index(:sort) || 0 || 
         raise(ArgumentError, 'no columns specified')
       store.set_sort_column_id(sort_column)
@@ -99,7 +111,7 @@ module VimMate
     def initialize_model
       @model = Gtk::TreeModelFilter.new(store)
       model.set_visible_func do |model, iter|
-        row = row_for(iter)
+        row = item_for(iter)
         if row.message?
           @found_count == 0
         elsif !filtered?
@@ -115,7 +127,7 @@ module VimMate
     end
 
     def create_item_for(full_file_path)
-      if File.exists?
+      if File.exists? full_file_path
         parent = nil # TODO find parent to new file
         # TODO add separator
         ## If we need a separator and it's a directory, we add it
@@ -158,6 +170,8 @@ module VimMate
         else
           raise "illegal Path given: #{something}"
         end
+      else
+        raise "Gimme a TreeRowRef, TreeIter, ListedItem or String (path), no #{something.class} please"
       end
     end
 

@@ -172,29 +172,31 @@ module VimMate
       @gtk_container_box.pack_start(@gtk_scrolled_window, true, true)      
       @gtk_container_box.pack_start(gtk_label, false, false)
 
+
+      # TODO put this into file_tree_controller
       # Process file tree event
-      @file_tree.add_refresh_signal do |method, file|
-        next if file.instance_of? ListedDirectory 
-        case method
-        when :add
-          # Add the new file
-          new_row = @gtk_list_model.append
-          new_row[NAME] = file.name
-          new_row[PATH] = file.path
-        when :remove
-          # A file is removed. Find it and remove it
-          to_remove = []
-          @gtk_list_model.each do |model,path,iter|
-            if iter[PATH] == file.path
-              to_remove << Gtk::TreeRowReference.new(model, path)
-              break
-            end
-          end
-          to_remove.each do |element|
-            @gtk_list_model.remove(@gtk_list_model.get_iter(element.path))
-          end
-        end
-      end
+      #@file_tree.add_refresh_signal do |method, file|
+      #  next if file.instance_of? ListedDirectory 
+      #  case method
+      #  when :add
+      #    # Add the new file
+      #    new_row = @gtk_list_model.append
+      #    new_row[NAME] = file.name
+      #    new_row[PATH] = file.path
+      #  when :remove
+      #    # A file is removed. Find it and remove it
+      #    to_remove = []
+      #    @gtk_list_model.each do |model,path,iter|
+      #      if iter[PATH] == file.path
+      #        to_remove << Gtk::TreeRowReference.new(model, path)
+      #        break
+      #      end
+      #    end
+      #    to_remove.each do |element|
+      #      @gtk_list_model.remove(@gtk_list_model.get_iter(element.path))
+      #    end
+      #  end
+      #end
     end
 
     # The "window" for this object

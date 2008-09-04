@@ -16,7 +16,7 @@ module VimMate
       module InstanceMethods
         def initialize_with_inotify(*args)
           initialize_without_inotify(*args)
-          self.class.inotify_watcher.watch_dir self.path, Mask
+          self.class.inotify_watcher.watch_dir(self.file_path, Mask) if directory?
         end
       end
 
@@ -31,13 +31,13 @@ module VimMate
             case event.type
             when /^modify|moved_to$/
               $stderr.puts "Inotify: got modified: #{event.filename}"
-              ListedTree.refreshed File.join(event.path,event.filename)
+              #ListedTree.refreshed File.join(event.path,event.filename)
             when 'delete'
               $stderr.puts "Inotify: got deleted: #{event.filename}"
-              ListedTree.removed File.join(event.path,event.filename)
+              #ListedTree.removed File.join(event.path,event.filename)
             when 'create'
               $stderr.puts "Inotify: got created: #{event.filename}"
-              ListedTree.added File.join(event.path,event.filename)
+              #ListedTree.added File.join(event.path,event.filename)
             end
           end
         end

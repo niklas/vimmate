@@ -18,12 +18,13 @@ module VimMate
     # Type of row: message ("nothing found")
     TYPE_MESSAGE = 3
 
-    def initialize(data = {})
-      @iter = data[:iter]
-      if fp data[:full_path]
+    def initialize(opts = {})
+      @iter = opts[:iter]
+      if fp = opts[:full_path]
         @file_path = File.dirname fp
         @name = File.basename fp
       end
+      self
     end
 
     # New by Gtk::TreeRowReference
@@ -40,7 +41,7 @@ module VimMate
     # TODO move this to Tree::Definitions::Column
     def method_missing(meth, *args, &block)
       if col = columns_labels.index(meth.to_sym)
-        iter[id]
+        iter[col]
       #elsif meth.to_s =~ /^(.*)=$/ 
       #  if id = columns_labels.index($1.to_sym)
       #    iter[id] = args.first
@@ -63,11 +64,11 @@ module VimMate
     end
 
     def message?
-      iter[REFERENCED_TYPE] = TYPE_MESSAGE
+      iter[REFERENCED_TYPE] == TYPE_MESSAGE
     end
 
     def separator?
-      iter[REFERENCED_TYPE] = TYPE_SEPARATOR
+      iter[REFERENCED_TYPE] == TYPE_SEPARATOR
     end
 
     def show!

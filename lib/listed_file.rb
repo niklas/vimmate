@@ -1,16 +1,17 @@
+require 'listed_item'
 module VimMate
   class ListedFile < ListedItem
     column :file_path, String
     column :icon, Gdk::Pixbuf
     column :status, String
     def file?
-      referenced_type == TYPE_FILE
+      iter[REFERENCED_TYPE] == TYPE_FILE && File.file?(file_path)
     end
     def directory?
-      referenced_type == TYPE_DIRECTORY
+      iter[REFERENCED_TYPE] == TYPE_DIRECTORY && File.directory?(file_path)
     end
     def file_or_directory?
-      true
+      file? || directory?
     end
 
     def full_path
@@ -70,7 +71,7 @@ module VimMate
     end
 
     def self.new_by_full_path_and_iter(full_path, iter)
-      if File.directory?
+      if File.directory? full_path
         ListedDirectory.new :full_path => full_path, :iter => iter
       else
         ListedFile.new :full_path => full_path, :iter => iter

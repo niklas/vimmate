@@ -25,10 +25,11 @@ require 'gtk2'
 require 'set'
 require 'thread'
 require 'vimmatelib/config'
-require 'vimmatelib/files'
+#require 'vimmatelib/files'
 require 'vimmatelib/icons'
 require 'vimmatelib/search_window'
-require 'vimmatelib/file_tree_view'
+#require 'vimmatelib/file_tree_view'
+require 'file_tree_controller'
 require 'vimmatelib/plugins'
 
 module VimMate
@@ -45,7 +46,7 @@ module VimMate
       # FIXME find a better place for that
       Thread.abort_on_exception = true
 
-      @tree = FileTreeView.new
+      @tree = FileTreeController.new
 
       # Double-click, Enter, Space: Signal to open the file
       @tree.view.signal_connect("row-activated") do |view, path, column|
@@ -119,9 +120,6 @@ module VimMate
       gtk_filter_button.active = Config[:files_filter_active]
       gtk_filter_box.spacing = 10
       gtk_filter_box.border_width = 10
-
-      # Create the file tree
-      initialize_file_tree(exclude_file_list)
       
       @gtk_top_box = Gtk::VBox.new
       @gtk_top_box.pack_start(gtk_filter_box, false, false)
@@ -154,7 +152,7 @@ module VimMate
     # Recursively add a path at the root of the tree
     def add_path(path)
       file_tree_mutex.synchronize do
-        @file_tree.add_path(path)
+        @tree << path
       end
       self
     end
@@ -223,20 +221,20 @@ module VimMate
     # Indicates that the initial file adding is going on. The timer to refresh
     # the list is started after the initial add.
     def initial_add(&block)
-      @file_tree.initial_add(&block)
-      file_tree_mutex.synchronize do
-        @file_tree.refresh(false)
-      end
-      expand_first_row
-      do_refresh
+      @tree.initial_add(&block)
+      #file_tree_mutex.synchronize do
+      #  @file_tree.refresh(false)
+      #end
+      #expand_first_row
+      #do_refresh
 
-      #TODO add file monitoring with gamin or fam or something like that
-      # Launch a timer to refresh the file list
-      Gtk.timeout_add(Config[:files_refresh_interval] * 100000) do 
-        puts "Auto-refreshing"
-        do_refresh
-        true
-      end
+      ##TODO add file monitoring with gamin or fam or something like that
+      ## Launch a timer to refresh the file list
+      #Gtk.timeout_add(Config[:files_refresh_interval] * 100000) do 
+      #  puts "Auto-refreshing"
+      #  do_refresh
+      #  true
+      #end
     end
     
     private
@@ -249,11 +247,6 @@ module VimMate
           @tree.model.refilter
         end
       end
-    end
-
-    # Create the file tree
-    def initialize_file_tree(exclude_file_list)
-      @file_tree = ListedTree.new(exclude_file_list)
     end
 
     def file_tree_mutex
