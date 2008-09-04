@@ -25,17 +25,20 @@ module VimMate
       end
     end
 
-    def save(full=true)
+    def fill(full=true)
       iter[NAME] = @name
       iter[FILE_PATH] = @file_path
-      iter[ICON] = icon
-      iter[STATUS] = status_text if Config[:files_show_status]
+      iter[ICON] = icon if file_or_directory?
+      iter[STATUS] = status if Config[:files_show_status]
       if full
         if directory?
-          iter[SORT] = "1-#{path}-1"
+          iter[SORT] = "1-#{full_path}-1"
           iter[REFERENCED_TYPE] = TYPE_DIRECTORY
+        elsif message?
+          iter[SORT] = '0000000'
+          iter[REFERENCED_TYPE] = TYPE_MESSAGE
         else
-          iter[SORT] = "2-#{path}-1"
+          iter[SORT] = "2-#{full_path}-1"
           iter[REFERENCED_TYPE] = TYPE_FILE
         end
       end

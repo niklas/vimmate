@@ -50,7 +50,7 @@ module VimMate
         end
 
         # Return the status text for this file depending on the file status
-        def status_text
+        def status
           Subversion.status_text(@path)
         end
       end

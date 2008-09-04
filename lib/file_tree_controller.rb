@@ -43,7 +43,10 @@ module VimMate
     end
 
     def <<(full_file_path)
-      create_item_for(full_file_path) unless references.has_key?(full_file_path)
+      unless references.has_key?(full_file_path)
+        item = create_item_for(full_file_path) 
+        item.fill
+      end
     end
 
 

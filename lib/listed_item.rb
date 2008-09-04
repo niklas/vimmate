@@ -57,7 +57,7 @@ module VimMate
       raise "no icon"
     end
 
-    def save
+    def fill
       columns_labels.each_with_index do |index, label|
         iter[index] = self.send label
       end
@@ -69,6 +69,18 @@ module VimMate
 
     def separator?
       iter[REFERENCED_TYPE] == TYPE_SEPARATOR
+    end
+
+    def file?
+      false
+    end
+
+    def directory?
+      false
+    end
+
+    def file_or_directory?
+      false
     end
 
     def show!
