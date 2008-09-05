@@ -120,15 +120,18 @@ module VimMate
     def initialize_model
       @model = Gtk::TreeModelFilter.new(store)
       model.set_visible_func do |model, iter|
-        row = item_for(iter)
-        if row.message?
-          @found_count == 0
-        elsif !filtered?
-          true
-        elsif row.separator?
-          row.visible?
+        if row = item_for(iter)
+          if row.message?
+            @found_count == 0
+          elsif !filtered?
+            true
+          elsif row.separator?
+            row.visible?
+          else
+            row.visible?
+          end
         else
-          row.visible?
+          false
         end
       end
       @filter_string = ""
