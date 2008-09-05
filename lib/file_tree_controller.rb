@@ -140,7 +140,8 @@ module VimMate
 
     def create_item_for(full_file_path)
       if File.exists? full_file_path
-        parent = nil # TODO find parent to new file
+        parent_path = File.dirname full_file_path
+        parent = has_path?(parent_path) ? references[parent_path].iter : nil
         # TODO add separator
         ## If we need a separator and it's a directory, we add it
         #if Config[:file_directory_separator] and file.instance_of? ListedDirectory
