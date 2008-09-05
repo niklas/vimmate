@@ -222,9 +222,9 @@ module VimMate
     # the list is started after the initial add.
     def initial_add(&block)
       @tree.initial_add(&block)
-      #file_tree_mutex.synchronize do
-      #  @file_tree.refresh(false)
-      #end
+      file_tree_mutex.synchronize do
+        @tree.refresh(true)
+      end
       #expand_first_row
       #do_refresh
 

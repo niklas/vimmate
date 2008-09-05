@@ -45,7 +45,13 @@ module VimMate
     def <<(full_file_path)
       unless references.has_key?(full_file_path)
         item = create_item_for(full_file_path) 
-        item.fill
+        item.fill(true)
+      end
+    end
+
+    def refresh(recurse=true)
+      each do |item|
+        item.refresh
       end
     end
 
@@ -140,8 +146,7 @@ module VimMate
         #  new_row[SORT] = "1-#{file.path}-2"
         #end
         iter = store.append(parent)
-        references[full_file_path] = Gtk::TreeRowReference.new(store, iter.path)
-        item = ListedFile.new_by_full_path_and_iter full_file_path, iter
+        item = build_item :full_path => full_file_path, :iter => iter
         # TODO call hooks here?
         item
       end
@@ -162,20 +167,31 @@ module VimMate
     def item_for(something)
       case something
       when Gtk::TreeRowReference
-        ListedItem.new_by_reference something
+        build_item(:iter => something.iter)
       when Gtk::TreeIter
-        ListedItem.new_by_iter something
+        build_item(:iter => something)
       when ListedItem
         something
       when String
         if references.has_key?(something)
-          item_for references[something]
+          build_item :iter => references[something].iter
         else
           raise "illegal Path given: #{something}"
         end
       else
         raise "Gimme a TreeRowRef, TreeIter, ListedItem or String (path), no #{something.class} please"
       end
+    end
+
+    def build_item(attrs)
+      attrs[:tree] = self
+      item = ListedItem.build attrs
+      references[item.full_path] = item.reference if item.file_or_directory?
+      item
+    end
+
+    def has_path? file_path
+      references.has_key? file_path
     end
 
     def create_message(message)

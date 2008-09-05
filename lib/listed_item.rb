@@ -4,6 +4,7 @@ module VimMate
   #  * for iteration in TreeController
   class ListedItem
     attr_reader :iter
+    attr_reader :tree
     include VimMate::Tree::Definitions::Column
     column :sort, String
     column :visible, FalseClass
@@ -19,11 +20,9 @@ module VimMate
     TYPE_MESSAGE = 3
 
     def initialize(opts = {})
+      @traversed = false
       @iter = opts[:iter]
-      if fp = opts[:full_path]
-        @file_path = File.dirname fp
-        @name = File.basename fp
-      end
+      @tree = opts[:tree]
       self
     end
 
@@ -54,11 +53,11 @@ module VimMate
     end
 
     def icon
-      raise "no icon"
+      nil
     end
 
-    def fill
-      columns_labels.each_with_index do |index, label|
+    def fill(full=true)
+      columns_labels.each_with_index do |label, index|
         iter[index] = self.send label
       end
     end
@@ -109,6 +108,32 @@ module VimMate
 
     def matches?(str)
       name.index(str)
+    end
+
+    def refresh
+      fill(false)
+    end
+
+    def reference
+      @reference ||= Gtk::TreeRowReference.new(tree.store, iter.path)
+    end
+
+    def self.build(attrs)
+      if full_path = attrs[:full_path]
+        if ::File.directory? full_path
+          ListedDirectory
+        elsif ::File.file? full_path
+          ListedFile
+        else
+          self
+        end
+      else
+        self
+      end.new attrs
+    end
+
+    def to_s
+      "#{self.class} [#{iter}]"
     end
 
   end

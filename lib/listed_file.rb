@@ -4,6 +4,13 @@ module VimMate
     column :file_path, String
     column :icon, Gdk::Pixbuf
     column :status, String
+    def initialize(opts = {})
+      super
+      if fp = opts[:full_path]
+        @file_path = File.dirname fp
+        @name = File.basename fp
+      end
+    end
     def file?
       iter[REFERENCED_TYPE] == TYPE_FILE && File.file?(file_path)
     end
@@ -15,7 +22,7 @@ module VimMate
     end
 
     def full_path
-      File.join file_path, name
+      File.join @file_path, @name
     end
 
     def after_show!
@@ -71,14 +78,6 @@ module VimMate
         column.set_attributes(text_cell_renderer2, :text => STATUS)
       end
       column
-    end
-
-    def self.new_by_full_path_and_iter(full_path, iter)
-      if File.directory? full_path
-        ListedDirectory.new :full_path => full_path, :iter => iter
-      else
-        ListedFile.new :full_path => full_path, :iter => iter
-      end
     end
   end
 end
