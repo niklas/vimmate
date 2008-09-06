@@ -50,8 +50,8 @@ module VimMate
 
       # Double-click, Enter, Space: Signal to open the file
       @tree.view.signal_connect("row-activated") do |view, path, column|
-        if row = @tree.find_row_by_iter_path(path) and row.file?
-          path = row.path
+        if row = @tree.item_for(path) and row.file?
+          path = row.full_path
           @open_signal.each do |signal|
             signal.call(path,
                         Config[:files_default_open_in_tabs] ? :tab_open : :open)
@@ -67,7 +67,7 @@ module VimMate
 
           if selected = @tree.selected_row and selected.file_or_directory?
             @menu_signal.each do |signal|
-              signal.call(selected.path)
+              signal.call(selected.full_path)
             end
           end
         end
@@ -82,7 +82,7 @@ module VimMate
       @tree.view.selection.signal_connect("changed") do
         gtk_label.text = ""
         if selected = @tree.selected_row and selected.file_or_directory?
-          gtk_label.text = File.join(selected.path,selected.name)
+          gtk_label.text = File.join(selected.full_path)
         end
       end
       
@@ -90,7 +90,7 @@ module VimMate
       @tree.view.signal_connect("popup_menu") do
         if selected = @tree.selected_row and selected.file_or_directory?
           @menu_signal.each do |signal|
-            signal.call(selected.path)
+            signal.call(selected.full_path)
           end
         end
       end

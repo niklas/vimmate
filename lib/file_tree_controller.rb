@@ -58,6 +58,27 @@ module VimMate
       end
     end
 
+    def item_for(something)
+      case something
+      when Gtk::TreeRowReference
+        build_item(:iter => something.iter)
+      when Gtk::TreeIter
+        build_item(:iter => something)
+      when ListedItem
+        something
+      when Gtk::TreePath
+        item_for store.get_iter(something)
+      when String
+        if has_path?(something)
+          build_item :reference => references[something]
+        else
+          raise ArgumentError, "illegal Path given: #{something}"
+        end
+      else
+        raise "Gimme a TreeRowRef, TreeIter, ListedItem or String (path), no #{something.class} please"
+      end
+    end
+
 
     private
     # Clear the filter, show all rows in tree and try to re-construct
@@ -176,25 +197,6 @@ module VimMate
       end
     end
     
-    def item_for(something)
-      case something
-      when Gtk::TreeRowReference
-        build_item(:iter => something.iter)
-      when Gtk::TreeIter
-        build_item(:iter => something)
-      when ListedItem
-        something
-      when String
-        if has_path?(something)
-          build_item :reference => references[something]
-        else
-          raise ArgumentError, "illegal Path given: #{something}"
-        end
-      else
-        raise "Gimme a TreeRowRef, TreeIter, ListedItem or String (path), no #{something.class} please"
-      end
-    end
-
     def build_item(attrs)
       attrs[:tree] = self
       item = ListedItem.build attrs
