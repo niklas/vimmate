@@ -16,7 +16,7 @@ module VimMate
       module InstanceMethods
         def initialize_with_inotify(*args)
           initialize_without_inotify(*args)
-          self.class.inotify_watcher.watch_dir(self.file_path, Mask) if directory?
+          self.class.inotify_watcher.watch_dir(self.full_path, Mask) if directory?
         end
       end
 

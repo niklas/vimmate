@@ -9,21 +9,22 @@ module VimMate
     column :sort, String
     column :visible, FalseClass
     column :name, String
-    column :referenced_type, Fixnum # not TYPE because we want to call #type later
-    # Type of row: file
-    TYPE_FILE = 0
-    # Type of row: directory
-    TYPE_DIRECTORY = 1
-    # Type of row: separator
-    TYPE_SEPARATOR = 2
-    # Type of row: message ("nothing found")
-    TYPE_MESSAGE = 3
+    column :referenced_type, String # not TYPE because we want to call #type later
 
     def initialize(opts = {})
       @traversed = false
       @iter = opts[:iter]
       @tree = opts[:tree]
+      self.reference = opts[:reference]
+      self.sort ||= opts[:sort] || sort_string
+      self.visible = true unless visible == false
+      self.name ||= opts[:name] || "item-#{iter}"
+      self.referenced_type ||= self.class.name.split('::').last
       self
+    end
+
+    def sort_string
+      "item-#{iter}"
     end
 
     # New by Gtk::TreeRowReference
@@ -36,38 +37,12 @@ module VimMate
       new(:iter => iter)
     end
 
-    # method to iter column mapping
-    # TODO move this to Tree::Definitions::Column
-    def method_missing(meth, *args, &block)
-      if col = columns_labels.index(meth.to_sym)
-        iter[col]
-      #elsif meth.to_s =~ /^(.*)=$/ 
-      #  if id = columns_labels.index($1.to_sym)
-      #    iter[id] = args.first
-      #  else
-      #    raise NoMethodError, "illegal setter: #{meth}"
-      #  end
-      else
-        raise NoMethodError, "'#{meth}' is neither a method nor an iter column"
-      end
-    end
-
-    def icon
-      nil
-    end
-
-    def fill(full=true)
-      columns_labels.each_with_index do |label, index|
-        iter[index] = self.send label
-      end
-    end
-
     def message?
-      iter[REFERENCED_TYPE] == TYPE_MESSAGE
+      referenced_type == 'VimMate::Message'
     end
 
     def separator?
-      iter[REFERENCED_TYPE] == TYPE_SEPARATOR
+      referenced_type == 'VimMate::Separator'
     end
 
     def file?
@@ -111,11 +86,17 @@ module VimMate
     end
 
     def refresh
-      fill(false)
     end
 
     def reference
       @reference ||= Gtk::TreeRowReference.new(tree.store, iter.path)
+    end
+
+    def reference=(new_ref)
+      if new_ref
+        @reference = new_ref
+        @iter = tree.store.get_iter(new_ref.path)
+      end
     end
 
     def self.build(attrs)
@@ -127,13 +108,15 @@ module VimMate
         else
           self
         end
+      elsif iter = attrs[:iter]
+        VimMate.const_get(iter[REFERENCED_TYPE])
       else
         self
       end.new attrs
     end
 
     def to_s
-      "#{self.class} [#{iter}]"
+      "#{self.class} [#{iter.path}]"
     end
 
   end

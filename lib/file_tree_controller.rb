@@ -40,16 +40,19 @@ module VimMate
     # TODO handle initial adding
     def initial_add(&block)
       block.call
+      model.refilter
     end
 
     def <<(full_file_path)
-      unless references.has_key?(full_file_path)
-        item = create_item_for(full_file_path) 
-        item.fill(true)
+      unless excludes? full_file_path
+        unless references.has_key?(full_file_path)
+          item = create_item_for(full_file_path) 
+        end
       end
     end
 
     def refresh(recurse=true)
+      $stderr.puts "refreshing Tree"
       each do |item|
         item.refresh
       end
@@ -120,19 +123,20 @@ module VimMate
     def initialize_model
       @model = Gtk::TreeModelFilter.new(store)
       model.set_visible_func do |model, iter|
-        if row = item_for(iter)
-          if row.message?
-            @found_count == 0
-          elsif !filtered?
-            true
-          elsif row.separator?
-            row.visible?
-          else
-            row.visible?
-          end
-        else
-          false
-        end
+        true
+        #if row = item_for(iter)
+        #  if row.message?
+        #    @found_count == 0
+        #  elsif !filtered?
+        #    true
+        #  elsif row.separator?
+        #    row.visible?
+        #  else
+        #    row.visible?
+        #  end
+        #else
+        #  false
+        #end
       end
       @filter_string = ""
       @found_count = -1
@@ -141,7 +145,11 @@ module VimMate
     def create_item_for(full_file_path)
       if File.exists? full_file_path
         parent_path = File.dirname full_file_path
-        parent = has_path?(parent_path) ? references[parent_path].iter : nil
+        parent = begin
+                   item_for(parent_path).iter
+                 rescue ArgumentError 
+                   nil
+                 end
         # TODO add separator
         ## If we need a separator and it's a directory, we add it
         #if Config[:file_directory_separator] and file.instance_of? ListedDirectory
@@ -164,7 +172,7 @@ module VimMate
         #if iter and iter[REFERENCED_TYPE] == TYPE_SEPARATOR
         #  store.remove(iter)
         #end
-        references.delete item.full_path
+        references.delete item.full_path if item.is_a?(ListedFile)
       end
     end
     
@@ -177,10 +185,10 @@ module VimMate
       when ListedItem
         something
       when String
-        if references.has_key?(something)
-          build_item :iter => references[something].iter
+        if has_path?(something)
+          build_item :reference => references[something]
         else
-          raise "illegal Path given: #{something}"
+          raise ArgumentError, "illegal Path given: #{something}"
         end
       else
         raise "Gimme a TreeRowRef, TreeIter, ListedItem or String (path), no #{something.class} please"
@@ -203,6 +211,10 @@ module VimMate
       #@message_row = store.append(nil)
       #  @message_row[REFERENCED_TYPE] = TYPE_MESSAGE
       #  @message_row[NAME] = "nothing found"
+    end
+
+    def excludes?(expression)
+      false
     end
   end
 end

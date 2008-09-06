@@ -1,28 +1,40 @@
 require 'listed_item'
 module VimMate
   class ListedFile < ListedItem
-    column :file_path, String
+    column :full_path, String
     column :icon, Gdk::Pixbuf
     column :status, String
     def initialize(opts = {})
       super
       if fp = opts[:full_path]
-        @file_path = File.dirname fp
-        @name = File.basename fp
+        self.full_path = fp
       end
     end
+    def refresh
+      # TODO re-integrate Icons
+      #self.icon ||= nil
+      self.status = "normal" if Config[:files_show_status]
+    end
+    def full_path=(new_full_path)
+      unless new_full_path.empty?
+        self.name = File.basename new_full_path
+        self.iter[FULL_PATH] = new_full_path
+      end
+    end
+    def sort_string
+      "2-#{full_path}-1"
+    end
     def file?
-      iter[REFERENCED_TYPE] == TYPE_FILE && File.file?(file_path)
+      referenced_type == 'ListedFile'
     end
     def directory?
-      iter[REFERENCED_TYPE] == TYPE_DIRECTORY && File.directory?(file_path)
+      referenced_type == 'ListedDirectory'
+    end
+    def exists?
+      File.file? full_path
     end
     def file_or_directory?
       file? || directory?
-    end
-
-    def full_path
-      File.join @file_path, @name
     end
 
     def after_show!
@@ -30,26 +42,6 @@ module VimMate
       if here = here.up!
         here.show!
       end
-    end
-
-    def fill(full=true)
-      iter[NAME] = @name
-      iter[FILE_PATH] = @file_path
-      iter[ICON] = icon if file_or_directory?
-      iter[STATUS] = status if Config[:files_show_status]
-      if full
-        if directory?
-          iter[SORT] = "1-#{full_path}-1"
-          iter[REFERENCED_TYPE] = TYPE_DIRECTORY
-        elsif message?
-          iter[SORT] = '0000000'
-          iter[REFERENCED_TYPE] = TYPE_MESSAGE
-        else
-          iter[SORT] = "2-#{full_path}-1"
-          iter[REFERENCED_TYPE] = TYPE_FILE
-        end
-      end
-      iter[VISIBLE] = true
     end
 
     def self.setup_view_column(column)
@@ -81,3 +73,5 @@ module VimMate
     end
   end
 end
+
+require 'listed_directory'

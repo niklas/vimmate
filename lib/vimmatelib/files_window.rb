@@ -222,9 +222,7 @@ module VimMate
     # the list is started after the initial add.
     def initial_add(&block)
       @tree.initial_add(&block)
-      file_tree_mutex.synchronize do
-        @tree.refresh(true)
-      end
+      do_refresh
       #expand_first_row
       #do_refresh
 
@@ -243,7 +241,7 @@ module VimMate
     def do_refresh(recurse=true)
       Thread.new do
         file_tree_mutex.synchronize do
-          @file_tree.refresh(recurse)
+          @tree.refresh
           @tree.model.refilter
         end
       end

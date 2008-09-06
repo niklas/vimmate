@@ -19,7 +19,14 @@ module VimMate
         module ClassMethods
           def column(label,type)
             columns << [label.to_sym, type]
-            const_set label.to_s.upcase, @@columns.length-1
+            index = @@columns.length-1
+            const_set label.to_s.upcase, index
+            define_method label do
+              iter[index]
+            end
+            define_method "#{label}=" do |new_val|
+              iter[index] = new_val
+            end
           end
           def columns
             @@columns ||= []
