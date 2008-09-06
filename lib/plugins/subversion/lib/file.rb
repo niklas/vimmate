@@ -15,7 +15,7 @@ module VimMate
         # Refresh the file. If the file status has changed, send a refresh
         # signal
         def refresh
-          status = Subversion.status(@path)
+          status = Subversion.status(full_path)
           if @last_status != status
             @last_status = status
             ListedTree.refreshed self
@@ -26,7 +26,7 @@ module VimMate
         
         # Return the icon for this file depending on the file status
         def svn_icon
-          status = Subversion.status(@path)
+          status = Subversion.status(full_path)
           if @last_status != status
             @last_status = status
           end
@@ -51,7 +51,7 @@ module VimMate
 
         # Return the status text for this file depending on the file status
         def status
-          Subversion.status_text(@path)
+          Subversion.status_text(full_path)
         end
       end
     end

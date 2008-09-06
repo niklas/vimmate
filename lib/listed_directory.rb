@@ -4,6 +4,9 @@ module VimMate
     def sort_string
       "1-#{full_path}-1"
     end
+    def icon_name
+      'folder'
+    end
     def file?
       false # yeah..!
     end

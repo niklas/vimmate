@@ -27,6 +27,10 @@ module VimMate
       "item-#{iter}"
     end
 
+    def icon_name
+      nil
+    end
+
     # New by Gtk::TreeRowReference
     def self.new_by_reference(reference)
       new(:iter => reference.iter)
@@ -117,6 +121,16 @@ module VimMate
 
     def to_s
       "#{self.class} [#{iter.path}]"
+    end
+
+    def self.modify_icon(scope, &block)
+      with = "icon_name_with_#{scope}"
+      without = "icon_name_without_#{scope}"
+      define_method with do
+        block.call(self)
+      end
+      alias_method without, :icon_name
+      alias_method :icon_name, with
     end
 
   end
