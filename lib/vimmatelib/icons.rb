@@ -34,7 +34,7 @@ module VimMate
     # The size for the icons of the windows
     WINDOW_ICON_SIZES = [16, 32, 48].freeze
 
-    Overlays = %w(scm progress)
+    Overlays = %w(scm progress type)
 
     # Create the Icons class. Cannot be called directly
     def initialize
