@@ -81,14 +81,20 @@ module VimMate
 
     # Callbacks
     def refresh_path(path)
-      item_for(path).refresh if has_path?(path)
+      Gtk.queue do
+        item_for(path).refresh if has_path?(path)
+      end
     end
     def add_path(path)
-      self << path
-      refresh_path path
+      Gtk.queue do
+        self << path
+        refresh_path path
+      end
     end
     def remove_path(path)
-      destroy_item(path) if has_path?(path)
+      Gtk.queue do
+        destroy_item(path) if has_path?(path)
+      end
     end
 
 
