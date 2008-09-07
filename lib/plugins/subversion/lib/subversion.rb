@@ -87,6 +87,7 @@ module VimMate
         ret_status = status.text_status if status.text_status > ret_status
       end
       rescue Svn::Error::WC_NOT_DIRECTORY
+      rescue Svn::Error::WC_NOT_LOCKED
       end
       ret_status
     end
