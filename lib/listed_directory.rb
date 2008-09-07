@@ -2,7 +2,7 @@ require 'listed_file'
 module VimMate
   class ListedDirectory < ListedFile
     def sort_string
-      "1-#{full_path}-1"
+      "1-#{name}-1"
     end
     def icon_name
       'folder'

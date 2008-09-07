@@ -21,10 +21,11 @@ module VimMate
       unless new_full_path.empty?
         self.name = File.basename new_full_path
         self.iter[FULL_PATH] = new_full_path
+        self.sort = sort_string
       end
     end
     def sort_string
-      "2-#{full_path}-1"
+      "2-#{name}-1"
     end
     def file?
       referenced_type == 'ListedFile' && ::File.file?(full_path)

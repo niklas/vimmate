@@ -16,7 +16,7 @@ module VimMate
       @iter = opts[:iter]
       @tree = opts[:tree]
       self.reference = opts[:reference]
-      self.sort ||= opts[:sort] || sort_string
+      self.sort ||= opts[:sort] || "item-#{iter}"
       self.visible = true unless visible == false
       self.name ||= opts[:name] || "item-#{iter}"
       self.referenced_type ||= self.class.name.split('::').last
