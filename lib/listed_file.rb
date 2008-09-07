@@ -30,10 +30,10 @@ module VimMate
       "2-#{name}-1"
     end
     def file?
-      referenced_type == 'ListedFile' && ::File.file?(full_path)
+      referenced_type == 'ListedFile' && full_path && ::File.file?(full_path)
     end
     def directory?
-      referenced_type == 'ListedDirectory' && ::File.directory?(full_path)
+      referenced_type == 'ListedDirectory' && full_path && ::File.directory?(full_path)
     end
     def exists?
       File.file? full_path
@@ -43,9 +43,9 @@ module VimMate
     end
 
     def after_show!
-      here = self
-      if here = here.up!
-        here.show!
+      i = iter
+      while i = i.parent
+        i[VISIBLE] = true
       end
     end
 

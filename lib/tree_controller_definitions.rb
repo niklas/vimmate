@@ -27,6 +27,11 @@ module VimMate
             define_method "#{label}=" do |new_val|
               iter[index] = new_val
             end
+            class_eval <<-EOCODE
+              def self.#{label}_column
+                #{index}
+              end
+            EOCODE
           end
           def columns
             @@columns ||= []

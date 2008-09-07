@@ -78,6 +78,10 @@ module VimMate
       end
     end
 
+    def has_path? file_path
+      references.has_key? file_path
+    end
+
 
     # Callbacks
     def refresh_path(path)
@@ -162,20 +166,21 @@ module VimMate
     def initialize_model
       @model = Gtk::TreeModelFilter.new(store)
       model.set_visible_func do |model, iter|
-        true
-        #if row = item_for(iter)
-        #  if row.message?
-        #    @found_count == 0
-        #  elsif !filtered?
-        #    true
-        #  elsif row.separator?
-        #    row.visible?
-        #  else
-        #    row.visible?
-        #  end
-        #else
-        #  false
-        #end
+        if iter and !iter[ListedItem.referenced_type_column].nil?
+          row = item_for(iter)
+          #ListedItem.new :iter => iter, :tree => self
+          if row.message?
+            @found_count == 0
+          elsif !filtered?
+            true
+          elsif row.separator?
+            row.visible?
+          else
+            row.visible?
+          end
+        else
+          true
+        end
       end
       @filter_string = ""
       @found_count = -1
@@ -218,12 +223,8 @@ module VimMate
     def build_item(attrs)
       attrs[:tree] = self
       item = ListedItem.build attrs
-      references[item.full_path] = item.reference if item.file_or_directory?
+      references[item.full_path] ||= item.reference if item.file_or_directory?
       item
-    end
-
-    def has_path? file_path
-      references.has_key? file_path
     end
 
     def create_message(message)

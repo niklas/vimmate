@@ -16,8 +16,10 @@ module VimMate
       module InstanceMethods
         def initialize_with_inotify(*args)
           initialize_without_inotify(*args)
-          self.class.inotify_watcher.watch_dir(self.full_path, Mask) if directory?
-          self.class.add_tree_for_notify(self.tree)
+          unless tree.has_path? full_path
+            self.class.inotify_watcher.watch_dir(self.full_path, Mask) if directory?
+            self.class.add_tree_for_notify(self.tree)
+          end
         end
       end
 

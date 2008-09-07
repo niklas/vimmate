@@ -19,7 +19,6 @@ module VimMate
     
     # Find files to add
     def add_new_files
-      $stderr.puts "adding new files to #{self}"
       begin
         Dir.foreach(full_path) do |file|
           # Skip hidden files
