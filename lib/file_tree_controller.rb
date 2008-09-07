@@ -9,6 +9,7 @@ module VimMate
     def initialize
       super
       @references = Hash.new(nil)
+      @initial_add_in_progress = false
       initialize_store
       # create_message 'nothing found'
       initialize_model
@@ -39,8 +40,14 @@ module VimMate
 
     # TODO handle initial adding
     def initial_add(&block)
+      @initial_add_in_progress = true
       block.call
       model.refilter
+      @initial_add_in_progress = false 
+    end
+
+    def initial_add_in_progress?
+      @initial_add_in_progress
     end
 
     def <<(full_file_path)
@@ -55,6 +62,11 @@ module VimMate
       each do |item|
         item.refresh
       end
+    end
+
+    def expand_first_row
+      view.collapse_all
+      view.expand_row(Gtk::TreePath.new("0"), false)
     end
 
     def item_for(something)

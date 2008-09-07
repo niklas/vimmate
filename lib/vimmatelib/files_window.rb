@@ -194,8 +194,7 @@ module VimMate
 
     # Expand the first row of the file tree
     def expand_first_row
-      @tree.view.collapse_all
-      @tree.view.expand_row(Gtk::TreePath.new("0"), false)
+      @tree.expand_first_row
     end
 
     # Add a block that will be called when the user choose to open a file
@@ -223,8 +222,6 @@ module VimMate
     def initial_add(&block)
       @tree.initial_add(&block)
       do_refresh
-      #expand_first_row
-      #do_refresh
 
       ##TODO add file monitoring with gamin or fam or something like that
       ## Launch a timer to refresh the file list
@@ -243,6 +240,7 @@ module VimMate
         file_tree_mutex.synchronize do
           @tree.refresh
           @tree.model.refilter
+          @tree.expand_first_row
         end
       end
     end
