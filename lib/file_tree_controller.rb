@@ -62,7 +62,9 @@ module VimMate
       when Gtk::TreeRowReference
         item_for store.get_iter(something.path)
       when Gtk::TreeIter
-        build_item(:iter => something)
+        if !something[ListedItem.referenced_type_column].nil?
+          build_item(:iter => something)
+        end
       when ListedItem
         something
       when Gtk::TreePath
@@ -71,7 +73,7 @@ module VimMate
         if has_path?(something)
           item_for references[something]
         else
-          raise ArgumentError, "illegal Path given: #{something}"
+          raise ArgumentError, "unknown Path given #{something}"
         end
       else
         raise "Gimme a TreeRowRef, TreeIter, TreePath, ListedItem or String (path), no #{something.class} please"
@@ -166,9 +168,7 @@ module VimMate
     def initialize_model
       @model = Gtk::TreeModelFilter.new(store)
       model.set_visible_func do |model, iter|
-        if iter and !iter[ListedItem.referenced_type_column].nil?
-          row = item_for(iter)
-          #ListedItem.new :iter => iter, :tree => self
+        if row = item_for(iter)
           if row.message?
             @found_count == 0
           elsif !filtered?
