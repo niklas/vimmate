@@ -52,7 +52,6 @@ module VimMate
     end
 
     def refresh(recurse=true)
-      $stderr.puts "refreshing Tree"
       each do |item|
         item.refresh
       end
@@ -61,7 +60,7 @@ module VimMate
     def item_for(something)
       case something
       when Gtk::TreeRowReference
-        build_item(:iter => something.iter)
+        item_for store.get_iter(something.path)
       when Gtk::TreeIter
         build_item(:iter => something)
       when ListedItem
@@ -70,12 +69,20 @@ module VimMate
         item_for store.get_iter(something)
       when String
         if has_path?(something)
-          build_item :reference => references[something]
+          item_for references[something]
         else
           raise ArgumentError, "illegal Path given: #{something}"
         end
       else
-        raise "Gimme a TreeRowRef, TreeIter, ListedItem or String (path), no #{something.class} please"
+        raise "Gimme a TreeRowRef, TreeIter, TreePath, ListedItem or String (path), no #{something.class} please"
+      end
+    end
+
+
+    # Callbacks
+    def refresh_path(path)
+      if item = item_for(path)
+        item.refresh
       end
     end
 

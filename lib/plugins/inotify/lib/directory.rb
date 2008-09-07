@@ -17,21 +17,21 @@ module VimMate
         def initialize_with_inotify(*args)
           initialize_without_inotify(*args)
           self.class.inotify_watcher.watch_dir(self.full_path, Mask) if directory?
+          self.class.add_tree_for_notify(self.tree)
         end
       end
 
       module ClassMethods
         def inotify_watcher
-          @inotify_watcher ||= INotify::INotify.new
+          @@inotify_watcher ||= INotify::INotify.new
         end
         def start_inotify_watcher
           inotify_watcher.start do |event|
             next if ignore_file_changes? event.filename
-            $stderr.puts "Inotify Event: #{event.dump}"
+            path = File.join(event.path, event.filename)
             case event.type
             when /^modify|moved_to$/
-              $stderr.puts "Inotify: got modified: #{event.filename}"
-              #ListedTree.refreshed File.join(event.path,event.filename)
+              @@trees_to_notify.each {|tree| tree.refresh_path(path) }
             when 'delete'
               $stderr.puts "Inotify: got deleted: #{event.filename}"
               #ListedTree.removed File.join(event.path,event.filename)
@@ -40,6 +40,10 @@ module VimMate
               #ListedTree.added File.join(event.path,event.filename)
             end
           end
+        end
+        def add_tree_for_notify(tree)
+          @@trees_to_notify ||= Set.new
+          @@trees_to_notify << tree unless tree.nil?
         end
         def ignore_file_changes?(filename)
           exclusions = [ /(swp|~|rej|orig)$/, /\/\.?#/, /^\./ ]

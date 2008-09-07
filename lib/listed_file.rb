@@ -14,7 +14,6 @@ module VimMate
       'file'
     end
     def refresh
-      # TODO re-integrate Icons
       self.icon = Icons.by_name icon_name
       self.status = "normal" if Config[:files_show_status]
     end
