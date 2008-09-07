@@ -14,8 +14,10 @@ module VimMate
       'file'
     end
     def refresh
-      self.icon = Icons.by_name icon_name
-      self.status = "normal" if Config[:files_show_status]
+      Gtk.queue do
+        self.icon = Icons.by_name icon_name
+        self.status = "normal" if Config[:files_show_status]
+      end
     end
     def full_path=(new_full_path)
       unless new_full_path.empty?

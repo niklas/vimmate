@@ -46,7 +46,7 @@ module VimMate
     def <<(full_file_path)
       unless excludes? full_file_path
         unless has_path?(full_file_path)
-          item = create_item_for(full_file_path) 
+          create_item_for(full_file_path) 
         end
       end
     end
@@ -86,8 +86,8 @@ module VimMate
       end
     end
     def add_path(path)
+      self << path
       Gtk.queue do
-        self << path
         refresh_path path
       end
     end
