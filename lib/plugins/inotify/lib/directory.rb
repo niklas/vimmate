@@ -29,15 +29,13 @@ module VimMate
           inotify_watcher.start do |event|
             next if ignore_file_changes? event.filename
             path = File.join(event.path, event.filename)
-            case event.type
-            when /^modify|moved_to$/
+            case event.type 
+            when 'modify'
               @@trees_to_notify.each {|tree| tree.refresh_path(path) }
             when 'delete'
-              $stderr.puts "Inotify: got deleted: #{event.filename}"
-              #ListedTree.removed File.join(event.path,event.filename)
-            when 'create'
-              $stderr.puts "Inotify: got created: #{event.filename}"
-              #ListedTree.added File.join(event.path,event.filename)
+              @@trees_to_notify.each {|tree| tree.remove_path(path) }
+            when /^create|moved_to$/
+              @@trees_to_notify.each {|tree| tree.add_path(path) }
             end
           end
         end

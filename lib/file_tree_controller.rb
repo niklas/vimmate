@@ -45,7 +45,7 @@ module VimMate
 
     def <<(full_file_path)
       unless excludes? full_file_path
-        unless references.has_key?(full_file_path)
+        unless has_path?(full_file_path)
           item = create_item_for(full_file_path) 
         end
       end
@@ -81,9 +81,14 @@ module VimMate
 
     # Callbacks
     def refresh_path(path)
-      if item = item_for(path)
-        item.refresh
-      end
+      item_for(path).refresh if has_path?(path)
+    end
+    def add_path(path)
+      self << path
+      refresh_path path
+    end
+    def remove_path(path)
+      destroy_item(path) if has_path?(path)
     end
 
 
@@ -194,13 +199,13 @@ module VimMate
 
     def destroy_item(something)
       if item = item_for(something) and iter = item.iter
+        references.delete item.full_path if item.is_a?(ListedFile)
         store.remove iter
         # auto-skips to the next
         # TODO delete separators
         #if iter and iter[REFERENCED_TYPE] == TYPE_SEPARATOR
         #  store.remove(iter)
         #end
-        references.delete item.full_path if item.is_a?(ListedFile)
       end
     end
     

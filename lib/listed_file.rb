@@ -27,10 +27,10 @@ module VimMate
       "2-#{full_path}-1"
     end
     def file?
-      referenced_type == 'ListedFile'
+      referenced_type == 'ListedFile' && ::File.file?(full_path)
     end
     def directory?
-      referenced_type == 'ListedDirectory'
+      referenced_type == 'ListedDirectory' && ::File.directory?(full_path)
     end
     def exists?
       File.file? full_path
