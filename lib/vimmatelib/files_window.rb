@@ -57,7 +57,7 @@ module VimMate
             signal.call(path,
                         Config[:files_default_open_in_tabs] ? :tab_open : :open)
           end
-          Signals.emit('open-file', path)
+          Signal.emit_file_opened(path)
         end
       end
 

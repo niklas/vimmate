@@ -84,7 +84,7 @@ module VimMate
         @vim_window.jump_to_line(iter[LINE].to_i)
       end
 
-      Signals.connect('open-file') do |path|
+      Signal.on_file_opened do |path|
         sleep 0.5
         do_refresh_tags
       end
@@ -101,9 +101,21 @@ module VimMate
       
       # Set the default size for the file list
       @gtk_scrolled_window_tags.set_size_request(Config[:files_opened_width], -1)
+     
+      Signal.on_file_modified do |path|
+        paths = @vim_window.get_all_buffer_paths
+        if paths.include?(path)
+          do_refresh_tags
+        end
+      end
 
-      #listen to inotify events
-      VimMate::ListedDirectory.add_tree_for_notify(self)
+      #Signal.on_file_deleted do |path|
+      #  #do_refresh_tags
+      #end
+      
+      #Signal.on_file_created do |path|
+      #  #do_refresh_tags
+      #end
     end
     
     # The "window" for this object
@@ -119,21 +131,6 @@ module VimMate
     #    * self: the object which received the signal.
     #    * page: the new current Gtk::NotebookPage
     #    * page_num: the index of the page
-    
-    def refresh_path(path)
-      paths = @vim_window.get_all_buffer_paths
-      if paths.include?(path)
-        do_refresh_tags
-      end
-    end
-
-    def remove_path(path)
-      #do_refresh_tags
-    end
-    
-    def add_path(path)
-      #do_refresh_tags
-    end
 
     def do_refresh_tags(paths=nil)
       if not paths

@@ -15,6 +15,25 @@ module VimMate
       initialize_model
       initialize_view
       initialize_columns
+      
+      # Callbacks
+      Signal.on_file_modified do |path|
+        Gtk.queue do
+          item_for(path).refresh if has_path?(path)
+        end
+      end
+      Signal.on_file_created do |path|
+        self << path
+        Gtk.queue do
+          item_for(path).refresh if has_path?(path)
+        end
+      end
+      Signal.on_file_deleted do |path|
+        Gtk.queue do
+          destroy_item(path) if has_path?(path)
+        end
+      end
+
     end
 
     def filter_string=(new_filter_string)
@@ -96,24 +115,6 @@ module VimMate
       references.has_key? file_path
     end
 
-
-    # Callbacks
-    def refresh_path(path)
-      Gtk.queue do
-        item_for(path).refresh if has_path?(path)
-      end
-    end
-    def add_path(path)
-      self << path
-      Gtk.queue do
-        refresh_path path
-      end
-    end
-    def remove_path(path)
-      Gtk.queue do
-        destroy_item(path) if has_path?(path)
-      end
-    end
 
 
     private

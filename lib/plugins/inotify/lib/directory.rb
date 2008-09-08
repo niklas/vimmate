@@ -18,7 +18,6 @@ module VimMate
           initialize_without_inotify(*args)
           unless tree.has_path? full_path
             self.class.inotify_watcher.watch_dir(self.full_path, Mask) if directory?
-            self.class.add_tree_for_notify(self.tree)
           end
         end
       end
@@ -31,19 +30,16 @@ module VimMate
           inotify_watcher.start do |event|
             next if ignore_file_changes? event.filename
             path = File.join(event.path, event.filename)
-            case event.type 
+            $stderr.puts "Inotify #{event.type} #{path}"
+            case event.type  
             when 'modify'
-              @@trees_to_notify.each {|tree| tree.refresh_path(path) }
+              Signal.emit_file_modified(path)
             when 'delete'
-              @@trees_to_notify.each {|tree| tree.remove_path(path) }
+              Signal.emit_file_deleted(path)
             when /^create|moved_to$/
-              @@trees_to_notify.each {|tree| tree.add_path(path) }
+              Signal.emit_file_created(path)
             end
           end
-        end
-        def add_tree_for_notify(tree)
-          @@trees_to_notify ||= Set.new
-          @@trees_to_notify << tree unless tree.nil?
         end
         def ignore_file_changes?(filename)
           exclusions = [ /(swp|~|rej|orig)$/, /\/\.?#/, /^\./ ]
