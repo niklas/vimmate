@@ -121,6 +121,8 @@ module VimMate
       fork do
         `gvim --socketid #{@gtk_socket.id} --servername #{@vim_server_name}`
       end
+      sleep 0.5
+      create_and_source_vimmate_extras
       self
     end
 

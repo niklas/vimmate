@@ -31,6 +31,7 @@ require 'vimmatelib/search_window'
 #require 'vimmatelib/file_tree_view'
 require 'file_tree_controller'
 require 'vimmatelib/plugins'
+require 'signals'
 
 module VimMate
 
@@ -56,10 +57,11 @@ module VimMate
             signal.call(path,
                         Config[:files_default_open_in_tabs] ? :tab_open : :open)
           end
+          Signals.emit('open-file', path)
         end
       end
 
-      # Left-click: Select and Signal to open the menu
+      # Right-click: Select and Signal to open the menu
       @tree.view.signal_connect("button_press_event") do |widget, event|
         if event.kind_of? Gdk::EventButton and event.button == 3
           path = @tree.view.get_path_at_pos(event.x, event.y)
@@ -86,7 +88,7 @@ module VimMate
         end
       end
       
-      # Same thing as Left-click, but with the keyboard
+      # Same thing as Right-click, but with the keyboard
       @tree.view.signal_connect("popup_menu") do
         if selected = @tree.selected_row and selected.file_or_directory?
           @menu_signal.each do |signal|
@@ -198,7 +200,7 @@ module VimMate
     end
 
     # Add a block that will be called when the user choose to open a file
-    # The block take two argument: the path to the file to open, and a
+    # The block takes two arguments: the path to the file to open, and a
     # symbol to indicate the kind: :open, :split_open, :tab_open
     def add_open_signal(&block)
       @open_signal << block
@@ -223,7 +225,6 @@ module VimMate
       @tree.initial_add(&block)
       do_refresh
 
-      ##TODO add file monitoring with gamin or fam or something like that
       ## Launch a timer to refresh the file list
       #Gtk.timeout_add(Config[:files_refresh_interval] * 100000) do 
       #  puts "Auto-refreshing"

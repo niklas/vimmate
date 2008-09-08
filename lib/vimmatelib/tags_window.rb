@@ -22,6 +22,7 @@ SOFTWARE.
 =end
 
 require 'gtk2'
+require 'signals'
 
 module VimMate
 
@@ -79,7 +80,13 @@ module VimMate
       @tags_tree_view.signal_connect("row-activated") do |view, path, column|
         iter = @tags_treestore.get_iter(path)
         @vim_window.open(iter[PATH], Config[:files_default_open_in_tabs] ? :tab_open : :open)
+        sleep 0.5
         @vim_window.jump_to_line(iter[LINE].to_i)
+      end
+
+      Signals.connect('open-file') do |path|
+        sleep 0.5
+        do_refresh_tags
       end
 
       #@tags_text_buffer = Gtk::TextBuffer.new()
@@ -95,11 +102,8 @@ module VimMate
       # Set the default size for the file list
       @gtk_scrolled_window_tags.set_size_request(Config[:files_opened_width], -1)
 
-
-      Gtk.timeout_add(Config[:tags_refresh_interval] * 1000) do 
-        do_refresh_tags
-        true
-      end
+      #listen to inotify events
+      VimMate::ListedDirectory.add_tree_for_notify(self)
     end
     
     # The "window" for this object
@@ -115,40 +119,62 @@ module VimMate
     #    * self: the object which received the signal.
     #    * page: the new current Gtk::NotebookPage
     #    * page_num: the index of the page
-
-
-    def do_refresh_tags
-      #if @gtk_notebook.page == 1
-        paths = @vim_window.get_all_buffer_paths
-
-        @tags_treestore.clear
-        add_parent_rows(paths)
-          
-        paths.each do |path|
-          #TODO make me dependent/configurable on file type/suffix
-          tags = `ctags -ex #{path}`
-          tags = tags.split("\n")
-          
-          tags.length.times do |i|
-            id, type, line, file = tags[i].split
-            if type ==  'method' or type == 'function'
-              new_row = @tags_treestore.append(@path_node_connection[path][METHODS])
-              new_row.set_value(NAME, id)
-              new_row.set_value(LINE, line)
-              new_row.set_value(PATH, file)
-            else if type == 'class'
-              new_row = @tags_treestore.append(@path_node_connection[path][CLASSES])
-              new_row.set_value(NAME, id)
-              new_row.set_value(LINE, line)
-              new_row.set_value(PATH, file)
-            end
-          end
-        end
-
-          @tags_tree_view.expand_all
-        end
-      #end
+    
+    def refresh_path(path)
+      paths = @vim_window.get_all_buffer_paths
+      if paths.include?(path)
+        do_refresh_tags
+      end
     end
 
+    def remove_path(path)
+      #do_refresh_tags
+    end
+    
+    def add_path(path)
+      #do_refresh_tags
+    end
+
+    def do_refresh_tags(paths=nil)
+      if not paths
+        paths = @vim_window.get_all_buffer_paths
+      end
+
+      @tags_treestore.clear
+      add_parent_rows(paths)
+        
+      paths.each do |path|
+        #TODO make me dependent/configurable on file type/suffix
+        tags = `ctags -ex #{path}`
+        tags = tags.split("\n")
+        last_class = nil
+
+        tags.each do |tag|
+          id, type, line, file = tag.split
+          case type
+          when 'method'
+          when 'function'
+            new_row = @tags_treestore.append(@path_node_connection[path][METHODS])
+            new_row.set_value(NAME, id)
+            new_row.set_value(LINE, line)
+            new_row.set_value(PATH, file)
+          when 'class'
+            new_row = @tags_treestore.append(@path_node_connection[path][CLASSES])
+            new_row.set_value(NAME, id)
+            new_row.set_value(LINE, line)
+            new_row.set_value(PATH, file)
+            last_class = new_row
+          when 'member'
+            new_row = @tags_treestore.append(last_class)
+            new_row.set_value(NAME, id)
+            new_row.set_value(LINE, line)
+            new_row.set_value(PATH, file)
+          end
+        end
+      end
+
+      @tags_tree_view.expand_all
+    end
   end
+
 end

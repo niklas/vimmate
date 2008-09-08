@@ -57,7 +57,8 @@ gem_specification = Gem::Specification.new do |s|
                      'Rakefile',
                      'setup.rb',
                      'bin/**/*',
-                     'lib/**/*']
+                     'lib/**/*',
+                     'images/**/*']
 end
 
 # Gem Task
