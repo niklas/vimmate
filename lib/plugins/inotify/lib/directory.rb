@@ -30,7 +30,7 @@ module VimMate
           inotify_watcher.start do |event|
             next if ignore_file_changes? event.filename
             path = File.join(event.path, event.filename)
-            $stderr.puts "Inotify #{event.type} #{path}"
+            #$stderr.puts "Inotify #{event.type} #{path}"
             case event.type  
             when 'modify'
               Signal.emit_file_modified(path)
