@@ -142,30 +142,31 @@ module VimMate
         
       paths.each do |path|
         #TODO make me dependent/configurable on file type/suffix
-        tags = `ctags -ex #{path}`
-        tags = tags.split("\n")
+        tags = `ctags --sort=1 -ex #{path}`
         last_class = nil
 
-        tags.each do |tag|
-          id, type, line, file = tag.split
-          case type
-          when 'method'
-          when 'function'
-            new_row = @tags_treestore.append(@path_node_connection[path][METHODS])
-            new_row.set_value(NAME, id)
-            new_row.set_value(LINE, line)
-            new_row.set_value(PATH, file)
-          when 'class'
-            new_row = @tags_treestore.append(@path_node_connection[path][CLASSES])
-            new_row.set_value(NAME, id)
-            new_row.set_value(LINE, line)
-            new_row.set_value(PATH, file)
-            last_class = new_row
-          when 'member'
-            new_row = @tags_treestore.append(last_class)
-            new_row.set_value(NAME, id)
-            new_row.set_value(LINE, line)
-            new_row.set_value(PATH, file)
+        whats_a_tag = %r[^(\w+)\s+(\w+\s?\w+)\s+(\d+)\s+(\S+)]
+        tags.each_line do |tag|
+          if elems = whats_a_tag.match(tag)
+            id, type, line, file = elems[1..-1]
+            case type
+            when 'function'
+              new_row = @tags_treestore.append(@path_node_connection[path][METHODS])
+              new_row.set_value(NAME, id)
+              new_row.set_value(LINE, line)
+              new_row.set_value(PATH, file)
+            when 'class'
+              new_row = @tags_treestore.append(@path_node_connection[path][CLASSES])
+              new_row.set_value(NAME, id)
+              new_row.set_value(LINE, line)
+              new_row.set_value(PATH, file)
+              last_class = new_row
+            when /^(singleton )?method|member$/
+              new_row = @tags_treestore.append(last_class)
+              new_row.set_value(NAME, id)
+              new_row.set_value(LINE, line)
+              new_row.set_value(PATH, file)
+            end
           end
         end
       end
