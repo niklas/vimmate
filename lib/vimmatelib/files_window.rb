@@ -51,7 +51,7 @@ module VimMate
 
       # Double-click, Enter, Space: Signal to open the file
       @tree.view.signal_connect("row-activated") do |view, path, column|
-        if row = @tree.item_for(path) and row.file?
+        if row = @tree.selected_row and row.file?
           path = row.full_path
           @open_signal.each do |signal|
             signal.call(path,
