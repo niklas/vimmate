@@ -128,6 +128,13 @@ module VimMate
       @gtk_top_box.pack_start(@gtk_scrolled_window, true, true)
       @gtk_top_box.pack_start(gtk_label, false, false)
 
+      config_button = Gtk::Button.new("conf")
+      config_button.signal_connect "pressed" do
+        config_window = VimMate::ConfigWindow.new
+      end
+      @gtk_top_box.pack_start(config_button,false,false)
+
+
       # Create the search file list if it's enabled
       if Config[:files_use_search]
         @gtk_paned_box = Gtk::VPaned.new

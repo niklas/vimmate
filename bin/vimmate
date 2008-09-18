@@ -80,6 +80,7 @@ fork do
   require 'vimmatelib/sidebar_window'
   require 'vimmatelib/main_window'
   require 'vimmatelib/vim_window'
+  require 'config_window'
 
   # Create the main objects
   main = VimMate::MainWindow.new
