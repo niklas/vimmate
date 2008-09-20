@@ -82,7 +82,7 @@ module VimMate
     # Access the configuration hash
     def config
       read_config
-      @config.freeze
+      #@config.freeze
       # Once read, we only need a simple reader
       self.class.send(:attr_reader, :config)
       config
