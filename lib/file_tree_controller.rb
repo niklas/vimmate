@@ -134,16 +134,16 @@ module VimMate
 
     def apply_filter
       @found_count = 0
-      each do |item|
-        if item.file?
-          if item.matches? filter_string
+      store.each do |model,path,iter|
+        if iter[ListedItem.referenced_type_column] == 'VimMate::ListedFile'
+          if iter[ListedItem.name_column].index filter_string
             @found_count += 1
-            item.show! # pre-directories get show automatically
+            item_for(iter).show!
           else
-            item.hide!
+            iter[ListedItem.visible_column] = false
           end
         else
-          item.hide!
+          iter[ListedItem.visible_column] = false
         end
       end
       model.refilter
@@ -162,8 +162,7 @@ module VimMate
       view.headers_visible = Config[:file_headers_visible]
       view.hover_selection = Config[:file_hover_selection]
       view.set_row_separator_func do |model, iter|
-        row = item_for(iter)
-        row.separator?
+        iter[ListedItem.referenced_type_column] == 'VimMate::Separator'
       end
     end
 
@@ -182,18 +181,10 @@ module VimMate
     def initialize_model
       @model = Gtk::TreeModelFilter.new(store)
       model.set_visible_func do |model, iter|
-        if row = item_for(iter)
-          if row.message?
-            @found_count == 0
-          elsif !filtered?
-            true
-          elsif row.separator?
-            row.visible?
-          else
-            row.visible?
-          end
-        else
+        if !filtered?
           true
+        else
+          iter[ListedItem.visible_column]
         end
       end
       @filter_string = ""
