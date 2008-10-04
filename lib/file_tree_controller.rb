@@ -135,7 +135,7 @@ module VimMate
     def apply_filter
       @found_count = 0
       store.each do |model,path,iter|
-        if iter[ListedItem.referenced_type_column] == 'VimMate::ListedFile'
+        if iter[ListedItem.referenced_type_column] == 'ListedFile'
           if iter[ListedItem.name_column].index filter_string
             @found_count += 1
             item_for(iter).show!
@@ -162,7 +162,7 @@ module VimMate
       view.headers_visible = Config[:file_headers_visible]
       view.hover_selection = Config[:file_hover_selection]
       view.set_row_separator_func do |model, iter|
-        iter[ListedItem.referenced_type_column] == 'VimMate::Separator'
+        iter[ListedItem.referenced_type_column] == 'Separator'
       end
     end
 
