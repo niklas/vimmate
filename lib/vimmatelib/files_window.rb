@@ -47,7 +47,7 @@ module VimMate
       # FIXME find a better place for that
       Thread.abort_on_exception = true
 
-      @tree = FileTreeController.new
+      @tree = FileTreeController.new(:exclude => exclude_file_list)
 
       # Double-click, Enter, Space: Signal to open the file
       @tree.view.signal_connect("row-activated") do |view, path, column|

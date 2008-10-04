@@ -6,10 +6,11 @@ module VimMate
     attr_reader :references
     attr_reader :store, :sort_column, :model, :view
     attr_reader :filter_string
-    def initialize
-      super
+    def initialize(opts={})
+      super()
       @references = Hash.new(nil)
       @initial_add_in_progress = false
+      @exclude = opts.delete(:exclude)
       initialize_store
       # create_message 'nothing found'
       initialize_model
@@ -247,8 +248,9 @@ module VimMate
       #  @message_row[NAME] = "nothing found"
     end
 
-    def excludes?(expression)
-      false
+    # Path ends with a node name contained in the exclude list
+    def excludes?(path)
+      @exclude.any?  {|f| path[-(f.size+1)..-1] == "/#{f}" }
     end
   end
 end
