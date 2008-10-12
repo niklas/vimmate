@@ -11,6 +11,7 @@ module VimMate
       @references = Hash.new(nil)
       @initial_add_in_progress = false
       @exclude = opts.delete(:exclude)
+      @filter_string = ''
       initialize_store
       # create_message 'nothing found'
       initialize_model
@@ -40,7 +41,9 @@ module VimMate
     def filter_string=(new_filter_string)
       if new_filter_string.empty?
         clear_filter
+        restore_expands
       else
+        save_expands if @filter_string.empty? and new_filter_string.length == 1
         @filter_string = new_filter_string
         apply_filter
       end
@@ -125,7 +128,6 @@ module VimMate
       @filter_string = ''
       @found_count = -1
       model.refilter
-      view.collapse_all if Config[:files_auto_expand_on_filter]
       filter
     end
 
