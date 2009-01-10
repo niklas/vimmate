@@ -25,8 +25,8 @@ module VimMate
         end
       end
       Signal.on_file_created do |path|
-        self << path
         Gtk.queue do
+          self << path
           item_for(path).refresh if has_path?(path)
         end
       end

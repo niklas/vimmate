@@ -32,6 +32,7 @@ module VimMate
         def inotify_watcher
           @@inotify_watcher ||= INotify::INotify.new
         end
+
         def start_inotify_watcher
           inotify_watcher.start do |event|
             next if ignore_file_changes? event.filename
@@ -46,6 +47,7 @@ module VimMate
             end
           end
         end
+
         def ignore_file_changes?(filename)
           exclusions = [ /(swp|~|rej|orig)$/, /\/\.?#/, /^\./ ]
           exclusions.any? { |exclusion| filename =~ exclusion }
