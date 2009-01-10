@@ -1,7 +1,13 @@
 module VimMate
   module Plugin
     module INotifyDirectory
-      Mask = INotify::Mask.new(INotify::IN_MODIFY.value | INotify::IN_DELETE.value | INotify::IN_CREATE.value | INotify::IN_MOVED_TO.value, 'filechange')
+      Mask = INotify::Mask.new(
+        INotify::IN_MODIFY.value | 
+        INotify::IN_DELETE.value | 
+        INotify::IN_CREATE.value | 
+        INotify::IN_MOVED_TO.value |
+        INotify::IN_MOVED_FROM.value |
+        0, 'filechange')
       def self.included(base)
         base.class_eval do
           include InstanceMethods
@@ -30,11 +36,10 @@ module VimMate
           inotify_watcher.start do |event|
             next if ignore_file_changes? event.filename
             path = File.join(event.path, event.filename)
-            #$stderr.puts "Inotify #{event.type} #{path}"
             case event.type  
             when 'modify'
               Signal.emit_file_modified(path)
-            when 'delete'
+            when /^delete|moved_from$/
               Signal.emit_file_deleted(path)
             when /^create|moved_to$/
               Signal.emit_file_created(path)
