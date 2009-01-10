@@ -30,8 +30,8 @@ require 'vimmatelib/icons'
 require 'vimmatelib/search_window'
 #require 'vimmatelib/file_tree_view'
 require 'file_tree_controller'
-require 'vimmatelib/plugins'
 require 'signals'
+require 'vimmatelib/plugins'
 
 module VimMate
 
