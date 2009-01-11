@@ -253,7 +253,7 @@ module VimMate
 
     private
     def path_visible_through_filter?(path)
-      @filter_string.empty? || path =~ Regexp.new(filter_string)
+      @filter_string.empty? || path =~ Regexp.new(filter_string.split(//).join('.*'))
     end
 
   end
