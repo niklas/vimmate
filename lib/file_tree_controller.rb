@@ -75,8 +75,9 @@ module VimMate
     def <<(full_file_path)
       unless excludes? full_file_path
         unless has_path?(full_file_path)
-          item = create_item_for(full_file_path)
-          item.refresh unless initial_add_in_progress?
+          if item = create_item_for(full_file_path)
+            item.refresh if initial_add_in_progress?
+          end
           return item
         end
       end
@@ -139,7 +140,7 @@ module VimMate
       @found_count = 0
       store.each do |model,path,iter|
         if iter[ListedItem.referenced_type_column] == 'ListedFile'
-          if iter[ListedItem.name_column].index filter_string
+          if path_visible_through_filter? iter[ListedItem.name_column]
             @found_count += 1
             item_for(iter).show!
           else
@@ -211,6 +212,9 @@ module VimMate
         #end
         iter = store.append(parent)
         item = build_item :full_path => full_file_path, :iter => iter
+        item.show! if path_visible_through_filter?(full_file_path)
+        view.expand_row(item.iter.path,true) if item.directory?
+        view.expand_row(item.iter.parent.path,true) if item.file?
         # TODO call hooks here?
         item
       end
@@ -246,5 +250,11 @@ module VimMate
     def excludes?(path)
       @exclude.any?  {|f| path[-(f.size+1)..-1] == "/#{f}" }
     end
+
+    private
+    def path_visible_through_filter?(path)
+      @filter_string.empty? || path =~ Regexp.new(filter_string)
+    end
+
   end
 end
