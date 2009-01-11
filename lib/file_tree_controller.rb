@@ -213,8 +213,10 @@ module VimMate
         iter = store.append(parent)
         item = build_item :full_path => full_file_path, :iter => iter
         item.show! if path_visible_through_filter?(full_file_path)
-        view.expand_row(item.iter.path,true) if item.directory?
-        view.expand_row(item.iter.parent.path,true) if item.file?
+        if filtering?
+          view.expand_row(item.iter.path,true) if item.directory?
+          view.expand_row(item.iter.parent.path,true) if item.file?
+        end
         # TODO call hooks here?
         item
       end
@@ -224,6 +226,7 @@ module VimMate
       if item = item_for(something) and iter = item.iter
         references.delete item.full_path if item.is_a?(ListedFile)
         store.remove iter
+        apply_filter
         # auto-skips to the next
         # TODO delete separators
         #if iter and iter[REFERENCED_TYPE] == TYPE_SEPARATOR
@@ -253,7 +256,11 @@ module VimMate
 
     private
     def path_visible_through_filter?(path)
-      @filter_string.empty? || path =~ Regexp.new(filter_string.split(//).join('.*'))
+      !filtering? || path =~ Regexp.new(filter_string.split(//).join('.*'))
+    end
+
+    def filtering?
+      !@filter_string.empty?
     end
 
   end
