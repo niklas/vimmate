@@ -27,7 +27,6 @@ module VimMate
       Signal.on_file_created do |path|
         Gtk.queue do
           self << path
-          item_for(path).refresh if has_path?(path)
         end
       end
       Signal.on_file_deleted do |path|
@@ -76,7 +75,9 @@ module VimMate
     def <<(full_file_path)
       unless excludes? full_file_path
         unless has_path?(full_file_path)
-          create_item_for(full_file_path) 
+          item = create_item_for(full_file_path)
+          item.refresh unless initial_add_in_progress?
+          return item
         end
       end
     end
