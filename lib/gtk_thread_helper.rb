@@ -44,6 +44,8 @@ module Gtk
   GTK_PENDING_BLOCKS = []
   GTK_PENDING_BLOCKS_LOCK = ::Monitor.new
 
+  GTK_MAX_PENDING_BLOCKS_PER_ITERATION = 42
+
   def Gtk.queue &block
     if Thread.current == Thread.main
       block.call
@@ -57,10 +59,12 @@ module Gtk
   def Gtk.main_with_queue timeout = 100
     Gtk.timeout_add timeout do
       GTK_PENDING_BLOCKS_LOCK.synchronize do
-        for block in GTK_PENDING_BLOCKS
-          block.call
+        length = GTK_PENDING_BLOCKS.length
+        if length > GTK_MAX_PENDING_BLOCKS_PER_ITERATION
+          GTK_PENDING_BLOCKS.shift(GTK_MAX_PENDING_BLOCKS_PER_ITERATION).each(&:call)
+        elsif length > 0
+          GTK_PENDING_BLOCKS.each(&:call).clear
         end
-        GTK_PENDING_BLOCKS.clear
       end
       true
     end
