@@ -147,7 +147,7 @@ module VimMate
             iter[ListedItem.visible_column] = false
           end
         else
-          iter[ListedItem.visible_column] = false
+          iter[ListedItem.visible_column] = false if iter.path
         end
       end
       model.refilter
