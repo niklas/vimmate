@@ -5,6 +5,8 @@ List of things to do:
 - Configurable shortcut keys: allow users to change the shortcut keys
   with .vimmaterc. Need to find a way to specify the modifier (shift, ctrl)
   and the key. Probably something like "CONTROL_MASK SHIFT_MASK GDK_S".
+- Tree gets fully expanded after saving an existing file
+- Icons are missing on move or mkdir -p
 
 = Ideas
 - New from file copy
@@ -13,4 +15,8 @@ List of things to do:
 
 = TODO from Rewrite
 - re-enable SVN support
+
+
+/home/niklas/ruby/VimMate/bin/../lib/file_tree_controller.rb: line 150
+   Gtk-CRITICAL **:gtk_tree_model_row_has_child_toggled: assertion `path != NULL' failed
 

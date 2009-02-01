@@ -79,9 +79,7 @@ module VimMate
       # Double-click, Enter, Space: Signal to open the file
       @tags_tree_view.signal_connect("row-activated") do |view, path, column|
         iter = @tags_treestore.get_iter(path)
-        @vim_window.open(iter[PATH], Config[:files_default_open_in_tabs] ? :tab_open : :open)
-        sleep 0.5
-        @vim_window.jump_to_line(iter[LINE].to_i)
+        @vim_window.open_and_jump_to_line iter[PATH], iter[LINE].to_i
       end
 
       Signal.on_file_opened do |path|

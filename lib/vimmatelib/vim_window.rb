@@ -23,12 +23,15 @@ SOFTWARE.
 
 require 'gtk2'
 require 'vimmatelib/config'
+require 'vim/integration'
 
 module VimMate
 
   # A window that can display and send information to the
   # GTK GUI of Vim (gVim)
   class VimWindow
+
+    include VimIntegration
 
     # Create the VimWindow. You must call start after this window is visible
     def initialize
@@ -54,34 +57,11 @@ module VimMate
     end
 
     #generate multiline functions that will be sourced on startup
-    def create_and_source_vimmate_extras
+    def source_vimmate_extras
       return if @extras_sourced
-      File.open("/tmp/vimmate.vim", 'w') do |file|
-        file.puts(<<-EOS
-            function! GetOpenBufferPaths()                                                  
-                let tablist = []
-                let pathlist = []
-                let cwd = getcwd()
-                for i in range(tabpagenr('$'))
-                    call extend(tablist, tabpagebuflist(i + 1))
-                endfor
-                for i in tablist
-                    let bufn = bufname(i)
-                    if (bufn =~ '^/')==0
-                      call add(pathlist, cwd . '/' . bufn)
-                    else
-                      call add(pathlist, bufn)
-                    end
-                endfor
-                call filter(pathlist, "v:val != cwd.'/'" )
-                return pathlist
-            endfunction
-          EOS
-         )
-      end
-
       if @vim_started
-        `gvim --servername #{@vim_server_name} --remote-send '<ESC><ESC><ESC>:source /tmp/vimmate.vim<CR>'`
+        source_path = File.join( File.dirname(__FILE__), '..', 'vim', 'source.vim')
+        remote_send "<ESC><ESC><ESC>:source #{source_path}<CR>"
         @extras_sourced = true
       end
     end
@@ -93,15 +73,25 @@ module VimMate
       case kind
       when :open, :split_open
         if kind == :split_open
-          `gvim --servername #{@vim_server_name} --remote-send '<ESC><ESC><ESC>:split<CR>'`
+          remote_send '<ESC><ESC><ESC>:split<CR>'
         end
-        `gvim --servername #{@vim_server_name} --remote '#{path}'`
+          exec_gvim "--remote '#{path}'"
       when :tab_open
-        `gvim --servername #{@vim_server_name} --remote-tab '#{path}'`
+          exec_gvim "--remote-tab '#{path}'"
       else
         raise "Unknow open kind: #{kind}"
       end
-      `gvim --servername #{@vim_server_name} --remote-send '<ESC><ESC><ESC>:buffer #{path}<CR>'`
+      remote_send "<ESC><ESC><ESC>:buffer #{path}<CR>"
+      focus_vim
+      self
+    end
+
+    def open_and_jump_to_line(path,lnum)
+      unless buffer = buffers.index(path)
+        open path, Config[:files_default_open_in_tabs] ? :tab_open : :open
+        sleep 0.5
+      end
+      send_command buffer, 'setDot', [lnum,0]
       focus_vim
       self
     end
@@ -109,7 +99,8 @@ module VimMate
     def jump_to_line(line)
       start
       if line >= 0
-        `gvim --servername #{@vim_server_name} --remote-send '<ESC><ESC><ESC>:#{line}<CR>'`
+        # TODO use neatbeans
+        remote_send "<ESC><ESC><ESC>:#{line}<CR>"
       end
     end
 
@@ -118,11 +109,12 @@ module VimMate
     def start
       return if @vim_started
       @vim_started = true
+      listen
       fork do
-        `gvim --socketid #{@gtk_socket.id} --servername #{@vim_server_name}`
+        exec_gvim "--socketid #{@gtk_socket.id} -nb:localhost:#{port}:#{Password}"
       end
       sleep 0.5
-      create_and_source_vimmate_extras
+      source_vimmate_extras
       self
     end
 
@@ -139,21 +131,23 @@ module VimMate
         #`gvim --servername #{@vim_server_name} --remote-send ':echo bufname(bufnr(""))<cr>'`
         #`gvim --servername #{@vim_server_name} --remote-send ':redir END<cr>'`
 
-        cwd = `gvim --servername #{@vim_server_name} --remote-expr 'getcwd()'`.chomp+'/'
+        get_current_buffer_number
+
+        cwd = exec_gvim "--remote-expr 'getcwd()'".chomp+'/'
         if cwd
-          return cwd+`gvim --servername #{@vim_server_name} --remote-expr 'bufname(bufnr(""))'`
+          return cwd + exec_gvim(%Q~--remote-expr 'bufname(bufnr(""))'~)
         end
       end
     end
 
-    def get_all_buffer_paths
-      create_and_source_vimmate_extras
-      if @vim_started
-        return `gvim --servername #{@vim_server_name} --remote-expr 'GetOpenBufferPaths()'`
-      else
-        return []
-      end
+    def get_current_buffer_number
+      send_function('getCursor')
     end
+
+    def get_all_buffer_paths
+      buffers[1..-1]
+    end
+
   end
 end
 
