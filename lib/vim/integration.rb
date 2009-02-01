@@ -14,16 +14,14 @@ module VimMate
     def listen
       Thread.new do
         while true
-          STDERR.puts "getCursor: #{send_function(0, 'getCursor')}"
+          send_function(0, 'getCursor')
           sleep 1
         end
       end
       Thread.new do
         while true
           if data = vim.gets
-            STDERR.puts "Vim: #{interpret_message(data)}"
-          else
-            STDERR.puts "nothing---"
+            interpret_message(data)
           end
         end
       end
