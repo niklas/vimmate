@@ -151,7 +151,7 @@ module VimMate
         end
       end
       model.refilter
-      view.expand_all if Config[:files_auto_expand_on_filter]
+      view.expand_all if filtering? and Config[:files_auto_expand_on_filter]
     end
 
     def each
