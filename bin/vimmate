@@ -38,7 +38,7 @@ $:.unshift(lib_dir) if File.directory? lib_dir
 $:.unshift(vimmate_lib_dir) if File.directory? vimmate_lib_dir
 
 require 'rubygems'
-
+require 'try'
 # Require the version
 require 'vimmatelib/version'
 
