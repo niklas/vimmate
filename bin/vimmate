@@ -117,14 +117,12 @@ fork do
 
   # When there are no files, add the current directory to the file list.
   # If files are specified on the command line, use them
-  files.initial_add do
-    if ARGV.empty?
-      files.add_path(File.expand_path('.'))
-      files.expand_first_row
-    else
-      ARGV.each do |file|
-        files.add_path(File.expand_path(file))
-      end
+  if ARGV.empty?
+    files.add_path(File.expand_path('.'))
+    files.expand_first_row
+  else
+    ARGV.each do |file|
+      files.add_path(File.expand_path(file))
     end
   end
 

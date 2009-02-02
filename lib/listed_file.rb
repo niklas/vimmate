@@ -8,6 +8,8 @@ module VimMate
       super
       if fp = opts[:full_path]
         self.full_path = fp
+        self.icon = Icons.by_name icon_name
+        self.status = "normal" if Config[:files_show_status]
       end
     end
     def icon_name

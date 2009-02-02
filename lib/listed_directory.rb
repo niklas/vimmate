@@ -10,21 +10,28 @@ module VimMate
     def file?
       false # yeah..!
     end
+    def directory?
+      true
+    end
     def refresh
       super
       #remove_not_existing_files
       add_new_files
     end
 
+    def children_paths
+      children_names.map {|n| File.join(full_path, n)}
+    end
+
+    def children_names
+      Dir.entries(full_path).select {|p| p !~ /^\./ }
+    end
+
     
     # Find files to add
     def add_new_files
       begin
-        Dir.foreach(full_path) do |file|
-          # Skip hidden files
-          next if file =~ /^\./
-          file_path = File.join(full_path, file)
-          # Skip files that we already have, happens in tree
+        children_paths.each do |file_path|
           tree << file_path
         end
       rescue Errno::ENOENT

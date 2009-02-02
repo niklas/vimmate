@@ -1,32 +1,22 @@
 require 'tree_controller_definitions'
-require 'tree_controller'
+require 'filtered_tree_controller'
 require 'listed_directory'
 module VimMate
-  class FileTreeController < TreeController
-    attr_reader :references
-    attr_reader :store, :sort_column, :model, :view
-    attr_reader :filter_string
+  class FileTreeController < FilteredTreeController
     def initialize(opts={})
-      super()
-      @references = Hash.new(nil)
+      super
       @initial_add_in_progress = false
       @exclude = opts.delete(:exclude)
-      @filter_string = ''
-      initialize_store
-      # create_message 'nothing found'
-      initialize_model
-      initialize_view
-      initialize_columns
       
       # Callbacks
       Signal.on_file_modified do |path|
         Gtk.queue do
-          item_for(path).refresh if has_path?(path)
+          create_or_find_item_by_path(path).refresh
         end
       end
       Signal.on_file_created do |path|
         Gtk.queue do
-          self << path
+          create_or_find_item_by_path(path)
         end
       end
       Signal.on_file_deleted do |path|
@@ -37,28 +27,7 @@ module VimMate
 
     end
 
-    def filter_string=(new_filter_string)
-      if new_filter_string.empty?
-        clear_filter
-        restore_expands
-      else
-        save_expands if @filter_string.empty? and new_filter_string.length == 1
-        @filter_string = new_filter_string
-        apply_filter
-      end
-    end
-    alias :filter :filter_string
-    alias :filter= :filter_string=
 
-    def filtered?
-      !filter_string.nil? and !filter_string.empty?
-    end
-
-    def selected_row
-      if iter = view.selection.selected
-        item_for iter
-      end
-    end
 
     # TODO handle initial adding
     def initial_add(&block)
@@ -74,18 +43,41 @@ module VimMate
 
     def <<(full_file_path)
       unless excludes? full_file_path
-        unless has_path?(full_file_path)
-          if item = create_item_for(full_file_path)
-            item.refresh if initial_add_in_progress?
+        Gtk.queue do
+          unless has_path?(full_file_path)
+            create_item_for(full_file_path)
           end
-          return item
         end
       end
     end
 
-    def refresh(recurse=true)
-      each do |item|
-        item.refresh
+    def add_path(full_file_path) # wie <<, aber added die erste ebene gleich mit
+      Thread.new do
+        create_or_find_item_by_path(full_file_path)
+        Gtk.queue do
+          traverse(full_file_path)
+        end
+      end
+    end
+
+    # Add children recursivly
+    def traverse(root_path)
+      if (item = item_for(root_path)) && item.directory?
+        item.children_paths.each do |path|
+          add_path(path)
+        end
+      end
+    end
+
+    def refresh(path=nil)
+      Thread.new do
+        each do |item|
+          if path.nil? || item.full_path.start_with?(path)
+            Gtk.queue do
+              item.refresh 
+            end
+          end
+        end
       end
     end
 
@@ -94,150 +86,76 @@ module VimMate
       view.expand_row(Gtk::TreePath.new("0"), false)
     end
 
+    def has_path? file_path
+      references.has_key? file_path
+    end
+
     def item_for(something)
       case something
-      when Gtk::TreeRowReference
-        item_for store.get_iter(something.path)
-      when Gtk::TreeIter
-        if !something[ListedItem.referenced_type_column].nil?
-          build_item(:iter => something)
-        end
-      when ListedItem
-        something
-      when Gtk::TreePath
-        item_for store.get_iter(something)
       when String
         if has_path?(something)
           item_for references[something]
         else
-          raise ArgumentError, "unknown Path given #{something}"
+          nil
         end
       else
-        raise "Gimme a TreeRowRef, TreeIter, TreePath, ListedItem or String (path), no #{something.class} please"
+        super
       end
-    end
-
-    def has_path? file_path
-      references.has_key? file_path
     end
 
 
 
     private
-    # Clear the filter, show all rows in tree and try to re-construct
-    # the previous collapse state
-    def clear_filter
-      @filter_string = ''
-      @found_count = -1
-      model.refilter
-      filter
-    end
 
     # Filter tree view so only directories and separators with matching
     # elements are set visible
-
+    # FIXME make threadsave
     def apply_filter
       @found_count = 0
       store.each do |model,path,iter|
-        if iter[ListedItem.referenced_type_column] == 'ListedFile'
-          if path_visible_through_filter? iter[ListedItem.name_column]
-            @found_count += 1
-            item_for(iter).show!
+        if filtering?
+          if iter[ListedItem.referenced_type_column] == 'ListedFile'
+            if path_visible_through_filter? iter[ListedItem.name_column]
+              @found_count += 1
+              item_for(iter).show!
+            else
+              iter[ListedItem.visible_column] = false
+            end
           else
-            iter[ListedItem.visible_column] = false
+            iter[ListedItem.visible_column] = false if iter.path
           end
         else
-          iter[ListedItem.visible_column] = false if iter.path
+          iter[ListedItem.visible_column] = true
         end
       end
       model.refilter
       view.expand_all if filtering? and Config[:files_auto_expand_on_filter]
     end
 
-    def each
-      store.each do |model,path,iter|
-        yield item_for(iter)
+    def create_or_find_item_by_path(full_file_path)
+      if has_path?(full_file_path)
+        item_for(full_file_path)
+      else
+        add_file_or_directory(full_file_path)
       end
     end
 
-    def initialize_view
-      @view = Gtk::TreeView.new(model)
-      view.selection.mode = Gtk::SELECTION_SINGLE
-      view.headers_visible = Config[:file_headers_visible]
-      view.hover_selection = Config[:file_hover_selection]
-      view.set_row_separator_func do |model, iter|
-        iter[ListedItem.referenced_type_column] == 'Separator'
-      end
-    end
-
-    def initialize_columns
-      column = ListedFile.setup_view_column(Gtk::TreeViewColumn.new)
-      view.append_column(column)
-    end
-
-    def initialize_store
-      @store = Gtk::TreeStore.new *ListedFile.columns_types
-      @sort_column = ListedFile.columns_labels.index(:sort) || 0 || 
-        raise(ArgumentError, 'no columns specified')
-      store.set_sort_column_id(sort_column)
-    end
-
-    def initialize_model
-      @model = Gtk::TreeModelFilter.new(store)
-      model.set_visible_func do |model, iter|
-        if !filtered?
-          true
-        else
-          iter[ListedItem.visible_column]
-        end
-      end
-      @filter_string = ""
-      @found_count = -1
-    end
-
-    def create_item_for(full_file_path)
+    # TODO new added files do not get filtered
+    # TODO expand the rows on filtering
+    def add_file_or_directory(full_file_path)
+      return if excludes?(full_file_path)
       if File.exists? full_file_path
-        parent_path = File.dirname full_file_path
-        parent = begin
-                   item_for(parent_path).iter
-                 rescue ArgumentError 
-                   nil
-                 end
-        # TODO add separator
-        ## If we need a separator and it's a directory, we add it
-        #if Config[:file_directory_separator] and file.instance_of? ListedDirectory
-        #  new_row = store.append(parent)
-        #  new_row[REFERENCED_TYPE] = TYPE_SEPARATOR
-        #  new_row[SORT] = "1-#{file.path}-2"
-        #end
-        iter = store.append(parent)
-        item = build_item :full_path => full_file_path, :iter => iter
-        item.show! if path_visible_through_filter?(full_file_path)
-        if filtering?
-          view.expand_row(item.iter.path,true) if item.directory?
-          view.expand_row(item.iter.parent.path,true) if item.file?
-        end
-        # TODO call hooks here?
-        item
+        create_item :full_path => full_file_path, :parent => File.dirname(full_file_path)
       end
     end
 
-    def destroy_item(something)
-      if item = item_for(something) and iter = item.iter
-        references.delete item.full_path if item.is_a?(ListedFile)
-        store.remove iter
-        apply_filter
-        # auto-skips to the next
-        # TODO delete separators
-        #if iter and iter[REFERENCED_TYPE] == TYPE_SEPARATOR
-        #  store.remove(iter)
-        #end
-      end
+    def removed_item(item)
+      super
+      references.delete item.full_path if item.file_or_directory?
     end
     
     def build_item(attrs)
-      attrs[:tree] = self
-      item = ListedItem.build attrs
+      item = super
       references[item.full_path] ||= item.reference if item.file_or_directory?
       item
     end
@@ -256,11 +174,13 @@ module VimMate
 
     private
     def path_visible_through_filter?(path)
-      !filtering? || path =~ Regexp.new(filter_string.split(//).join('.*'))
+      path =~ Regexp.new(filter_string.split(//).join('.*'))
     end
 
-    def filtering?
-      !@filter_string.empty?
+    def created_item(item)
+      if item.iter.path.depth == 2
+        view.expand_row(item.iter.parent.path, false)
+      end
     end
 
   end

@@ -160,9 +160,7 @@ module VimMate
 
     # Recursively add a path at the root of the tree
     def add_path(path)
-      file_tree_mutex.synchronize do
-        @tree << path
-      end
+      @tree.add_path(path)
       self
     end
 
