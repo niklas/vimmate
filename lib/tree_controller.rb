@@ -77,7 +77,6 @@ module VimMate
       Gtk.queue do
         if item = item_for(something) and iter = item.iter
           store.remove iter
-          removed_item(item)
         end
       end
     end
@@ -119,9 +118,6 @@ module VimMate
     end
 
     def created_item(item)
-    end
-
-    def removed_item(item)
     end
 
   end

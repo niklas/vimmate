@@ -11,7 +11,7 @@ module VimMate
       # Callbacks
       Signal.on_file_modified do |path|
         Gtk.queue do
-          create_or_find_item_by_path(path).refresh
+          create_or_find_item_by_path(path).try(:refresh)
         end
       end
       Signal.on_file_created do |path|
@@ -21,7 +21,10 @@ module VimMate
       end
       Signal.on_file_deleted do |path|
         Gtk.queue do
-          destroy_item(path) if has_path?(path)
+          if has_path?(path)
+            destroy_item(path) 
+            references.delete path
+          end
         end
       end
 
@@ -151,11 +154,6 @@ module VimMate
       end
     end
 
-    def removed_item(item)
-      super
-      references.delete item.full_path if item.file_or_directory?
-    end
-    
     def build_item(attrs)
       item = super
       references[item.full_path] ||= item.reference if item.file_or_directory?

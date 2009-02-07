@@ -44,11 +44,5 @@ module VimMate
       model.refilter
     end
 
-    ## "event callbacks"
-    def removed_item(item)
-      super
-      apply_filter
-    end
-
   end
 end
