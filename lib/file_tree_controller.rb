@@ -16,7 +16,7 @@ module VimMate
       end
       Signal.on_file_created do |path|
         Gtk.queue do
-          create_or_find_item_by_path(path)
+          add_path(path)
           apply_filter
         end
       end
