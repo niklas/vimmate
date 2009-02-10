@@ -52,6 +52,7 @@ module VimMate
     end
 
     def add_path(full_file_path) # wie <<, aber added die erste ebene gleich mit
+      return if excludes?(full_file_path)
       Thread.new do
         create_or_find_item_by_path(full_file_path)
         Gtk.queue do
@@ -87,7 +88,7 @@ module VimMate
     end
 
     def has_path? file_path
-      references.has_key? file_path
+      !file_path.nil? && references.has_key?(file_path) && references[file_path]
     end
 
     def item_for(something)
@@ -96,10 +97,10 @@ module VimMate
         if has_path?(something)
           item_for references[something]
         else
-          nil
+          raise "unknown path: #{something}"
         end
       else
-        super
+        super(something)
       end
     end
 
@@ -145,7 +146,8 @@ module VimMate
     def add_file_or_directory(full_file_path)
       return if excludes?(full_file_path)
       if File.exists? full_file_path
-        create_item :full_path => full_file_path, :parent => File.dirname(full_file_path)
+        parent_path = File.dirname(full_file_path)
+        create_item :full_path => full_file_path, :parent => has_path?(parent_path) ? parent_path : nil
       end
     end
 
@@ -181,6 +183,10 @@ module VimMate
       if item.iter.path.depth == 2
         view.expand_row(item.iter.parent.path, false)
       end
+    end
+
+    def removed_item(item)
+      references.delete(item.full_path)
     end
 
   end

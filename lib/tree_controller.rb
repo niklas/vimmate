@@ -39,7 +39,8 @@ module VimMate
     def item_for(something)
       case something
       when Gtk::TreeRowReference
-        item_for store.get_iter(something.path)
+        iter = store.get_iter(something.path)
+        iter.nil? ? nil : item_for(iter)
       when Gtk::TreeIter
         if !something[ListedItem.referenced_type_column].nil?
           build_item(:iter => something)
@@ -48,6 +49,8 @@ module VimMate
         something
       when Gtk::TreePath
         item_for store.get_iter(something)
+      when nil
+        raise ArgumentError, "item_for(nil) is not nice, man."
       else
         raise "Gimme a TreeRowRef, TreeIter, TreePath, ListedItem or String (path), no #{something.class} please"
       end
@@ -59,7 +62,11 @@ module VimMate
 
     def create_item(attrs)
       Gtk.queue do
-        parent = item_for(attrs.delete(:parent))
+        parent = if (p = attrs.delete(:parent))
+                   item_for(p)
+                 else
+                   nil
+                 end
         iter = store.append(parent.try(:iter))
         item = build_item attrs.merge(:iter => iter)
         created_item(item)
