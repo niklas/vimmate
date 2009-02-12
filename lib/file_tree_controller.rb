@@ -11,14 +11,11 @@ module VimMate
       # Callbacks
       Signal.on_file_modified do |path|
         Gtk.queue do
-          create_or_find_item_by_path(path).try(:refresh)
+          item_for(path).try(:refresh) if has_path?(path)
         end
       end
       Signal.on_file_created do |path|
-        Gtk.queue do
-          add_path(path)
-          apply_filter
-        end
+        add_path(path)
       end
       Signal.on_file_deleted do |path|
         Gtk.queue do
@@ -58,7 +55,9 @@ module VimMate
     def add_path(full_file_path) # wie <<, aber added die erste ebene gleich mit
       return if excludes?(full_file_path)
       Thread.new do
-        create_or_find_item_by_path(full_file_path)
+        Gtk.queue do
+          create_or_find_item_by_path(full_file_path)
+        end
         Gtk.queue do
           traverse(full_file_path)
         end
@@ -67,6 +66,7 @@ module VimMate
 
     # Add children recursivly
     def traverse(root_path)
+      return unless has_path?(root_path)
       if (item = item_for(root_path)) && item.directory?
         item.children_paths.each do |path|
           add_path(path)
