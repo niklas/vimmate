@@ -119,7 +119,7 @@ module VimMate
       @found_count = 0
       store.each do |model,path,iter|
         if filtering?
-          if iter[ListedItem.referenced_type_column] == 'ListedFile'
+          if iter[ListedItem.referenced_type_column] == 'VimMate::ListedFile'
             if iter_visible_through_filter? iter
               @found_count += 1
               item_for(iter).show!

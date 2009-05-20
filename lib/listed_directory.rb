@@ -13,6 +13,9 @@ module VimMate
     def directory?
       true
     end
+    def exists?
+      full_path && ::File.directory?(full_path)
+    end
     def refresh
       super
       #remove_not_existing_files

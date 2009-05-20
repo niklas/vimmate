@@ -114,7 +114,7 @@ module VimMate
         if gtk_filter_button.active?
           @tree.filter = @gtk_file_filter_entry.text
         else
-          self.clear_filter
+          @tree.clear_filter
         end
       end
       @gtk_file_filter_entry.signal_connect("changed", &changed_lambda)

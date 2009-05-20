@@ -30,6 +30,9 @@ SOFTWARE.
 module VimMate
 end
 
+require 'rubygems'
+require 'activesupport'
+
 # Find the lib directory based on the path of this file
 lib_dir = File.join(File.dirname(__FILE__), "../lib")
 vimmate_lib_dir = File.join(lib_dir, "vimmatelib")
@@ -37,7 +40,6 @@ vimmate_lib_dir = File.join(lib_dir, "vimmatelib")
 $:.unshift(lib_dir) if File.directory? lib_dir
 $:.unshift(vimmate_lib_dir) if File.directory? vimmate_lib_dir
 
-require 'rubygems'
 require 'try'
 # Require the version
 require 'vimmatelib/version'

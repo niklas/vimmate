@@ -19,7 +19,7 @@ module VimMate
       self.sort ||= opts[:sort] || "item-#{iter}"
       #self.visible = true unless visible == false
       self.name ||= opts[:name] || "item-#{iter}"
-      self.referenced_type ||= self.class.name.split('::').last
+      self.referenced_type ||= self.class.name
       self
     end
 
@@ -69,7 +69,6 @@ module VimMate
       #    tree.row_for_iter(iter).show!
       #  end
       #end
-      after_show! if respond_to? :after_show!
     end
     def hide!
       self.visible = false
@@ -113,7 +112,7 @@ module VimMate
           self
         end
       elsif iter = attrs[:iter] and !iter[REFERENCED_TYPE].nil?
-        VimMate.const_get(iter[REFERENCED_TYPE])
+        iter[REFERENCED_TYPE].constantize
       else
         self
       end.new attrs

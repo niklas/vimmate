@@ -32,23 +32,24 @@ module VimMate
       "2-#{name}-1"
     end
     def file?
-      referenced_type == 'ListedFile' && full_path && ::File.file?(full_path)
+      true
     end
     def directory?
-      referenced_type == 'ListedDirectory' && full_path && ::File.directory?(full_path)
+      false
     end
     def exists?
-      File.file? full_path
+      full_path && ::File.file?(full_path)
     end
     def file_or_directory?
       file? || directory?
     end
 
-    def after_show!
+    def show!
       i = iter
       while i = i.parent
         i[VISIBLE] = true
       end
+      super
     end
 
     def self.setup_view_column(column)

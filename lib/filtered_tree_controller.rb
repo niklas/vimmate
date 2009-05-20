@@ -12,7 +12,6 @@ module VimMate
       @filter_regexp = nil
       if new_filter_string.empty?
         clear_filter
-        restore_expands
       else
         save_expands if @filter_string.empty? and new_filter_string.length == 1
         @filter_string = new_filter_string
@@ -22,15 +21,17 @@ module VimMate
     alias :filter :filter_string
     alias :filter= :filter_string=
 
-    private
     # Clear the filter, show all rows in tree and try to re-construct
     # the previous collapse state
     def clear_filter
       @filter_string = ''
       @found_count = -1
       model.refilter
+      restore_expands
       filter
     end
+
+    private
 
     # TODO alias: refresh_filter ?
     def apply_filter
