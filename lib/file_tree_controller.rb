@@ -120,7 +120,7 @@ module VimMate
       store.each do |model,path,iter|
         if filtering?
           if iter[ListedItem.referenced_type_column] == 'ListedFile'
-            if path_visible_through_filter? iter[ListedItem.name_column]
+            if iter_visible_through_filter? iter
               @found_count += 1
               item_for(iter).show!
             else
@@ -174,8 +174,23 @@ module VimMate
     end
 
     private
-    def path_visible_through_filter?(path)
-      path =~ Regexp.new(filter_string.split(//).join('.*'))
+    def iter_visible_through_filter?(iter)
+      if filter_string.index('/')
+        iter[ListedFile.full_path_column]
+      else
+        iter[ListedFile.name_column]
+      end =~ filter_regexp
+    end
+
+    # Fuzzy search by String
+    # 'foo'     => matches la/lu/foo, f/lala/o/gaga/o
+    # 'foo/bar' => matches la/afoo/gnarz/barz, but not the above
+    def filter_regexp
+      @filter_regexp ||= Regexp.new(
+        filter_string.split('/').map { |t| 
+          Regexp.escape(t).split(//).join('.*') 
+        }.join('.*/.*')
+      )
     end
 
     def created_item(item)
