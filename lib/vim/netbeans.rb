@@ -146,6 +146,8 @@ module VimMate
       end
 
       def send_message(message)
+        STDERR.puts "--- NOT sending #{message}"
+        return
         SERVER_MUTEX.synchronize do
           vim.puts message
         end
