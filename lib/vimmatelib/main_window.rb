@@ -53,17 +53,20 @@ module VimMate
     # Create the MainWindow
     def initialize
       @glade = GladeXML.new(GladePath) {|handler| method(handler)}
-      main_window.title = Config[:window_title]
-      main_window.set_default_size(Config[:window_width],
+      @glade.widget_names.each do |widget|
+        instance_variable_set "@#{widget.underscore}", glade[widget]
+      end
+      @main_window.title = Config[:window_title]
+      @main_window.set_default_size(Config[:window_width],
                                   Config[:window_height])
-      main_window.set_icon_list(Icons.window_icons)
+      @main_window.set_icon_list(Icons.window_icons)
       # Add an event handler for keys events
 
-      tree_scroller.set_size_request(Config[:files_opened_width], -1)
+      @tree_scroller.set_size_request(Config[:files_opened_width], -1)
 
-      files_filter_button.active = Config[:files_filter_active]
+      @files_filter_button.active = Config[:files_filter_active]
 
-      files_pane.position = Config[:files_search_separator_position]
+      @files_pane.position = Config[:files_search_separator_position]
     end
 
     # The "window" for this object
@@ -74,7 +77,7 @@ module VimMate
     # Show the window and start the main loop. Also starts the
     # window given in parameters. (Used for VimWindow)
     def start(start_window)
-      main_window.show_all
+      @main_window.show_all
       start_window.start
       Gtk.main_with_queue
     end
