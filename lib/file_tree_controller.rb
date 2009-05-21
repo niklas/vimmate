@@ -111,15 +111,15 @@
     # elements are set visible
     # FIXME make threadsave
     def applying_filter(model,path,iter)
-      if iter[ListedItem.referenced_type_column] == 'VimMate::ListedFile'
+      if iter[ActiveWindow::ListedItem.referenced_type_column] == 'ListedFile'
         if iter_visible_through_filter? iter
           @found_count += 1
           item_for(iter).show!
         else
-          iter[ListedItem.visible_column] = false
+          iter[ActiveWindow::ListedItem.visible_column] = false
         end
       else
-        iter[ListedItem.visible_column] = false if iter.path
+        iter[ActiveWindow::ListedItem.visible_column] = false if iter.path
       end
     end
 

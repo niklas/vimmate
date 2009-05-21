@@ -24,7 +24,6 @@ module ActiveWindow
       @found_count = -1
       model.refilter
       restore_expands
-      filter
     end
 
     private
@@ -39,7 +38,7 @@ module ActiveWindow
           iter[ListedItem.visible_column] = true
         end
       end
-      model.refilter
+      refresh_model
       run_callbacks :after_filter_applied
     end
 
@@ -49,7 +48,7 @@ module ActiveWindow
 
 
     def filtered?
-      !filter_string.nil? and !filter_string.empty?
+      !filter_string.blank?
     end
     alias :filtering? :filtered?
 
