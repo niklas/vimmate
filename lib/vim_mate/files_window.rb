@@ -39,17 +39,6 @@ module VimMate
       Thread.abort_on_exception = true
 
 
-      # Double-click, Enter, Space: Signal to open the file
-      @tree.view.signal_connect("row-activated") do |view, path, column|
-        if row = @tree.selected_row and row.file?
-          path = row.full_path
-          @open_signal.each do |signal|
-            signal.call(path,
-                        Config[:files_default_open_in_tabs] ? :tab_open : :open)
-          end
-          Signal.emit_file_opened(path)
-        end
-      end
 
       # Right-click: Select and Signal to open the menu
       @tree.view.signal_connect("button_press_event") do |widget, event|

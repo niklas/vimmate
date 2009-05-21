@@ -69,21 +69,6 @@ fork do
 #    VimMate::TerminalsWindow.new
 #  end
 
-  # Set the signals for the file list
-#  file_tree.view.add_open_signal do |path, kind|
-#    vim.open(path, kind)
-#  end
-#  file_tree.add_menu_signal do |path|
-#    menu.open(path)
-#  end
-#
-  # Set the signals for the file menu
-#  menu.add_open_signal do |path, kind|
-#    vim.open(path, kind)
-#  end
-#  menu.add_refresh_signal do
-#    files.refresh
-#  end
 #
   # If there are no files given, add the current directory to the file list.
   # If files are specified on the command line, use them

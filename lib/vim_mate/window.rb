@@ -22,13 +22,32 @@ module VimMate
     after_initialize :setup_components
     def setup_components
       @file_tree = VimMate::FileTreeController.new(:exclude => [])
-      tree_scroller.add(@file_tree.view)
+      tree_scroller.add(file_tree.view)
+
+      # Double-click, Enter, Space: Signal to open the file
+      file_tree.view.signal_connect("row-activated") do |view, path, column|
+        if row = file_tree.selected_row and row.file?
+          vim.open(row.full_path, Config[:files_default_open_in_tabs] ? :tab_open : :open)
+          Signal.emit_file_opened(row.full_path)
+        end
+      end
+      #file_tree.add_menu_signal do |path|
+      #  menu.open(path)
+      #end
 
       @vim = VimMate::VimWidget.new
       main_pane.pack2(vim.window, true, false)
 
       @tags_tree = VimMate::TagsWindow.new(@vim)
       tags_scroller.add @tags_tree.gtk_window
+
+      ## Set the signals for the file menu
+      #menu.add_open_signal do |path, kind|
+      #  vim.open(path, kind)
+      #end
+      #menu.add_refresh_signal do
+      #  files.refresh
+      #end
     end
 
     after_show :start_vim
