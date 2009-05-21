@@ -37,6 +37,9 @@ module VimMate
 
   # Represents the main window of the application
   class MainWindow
+    require_dependency('handlers/file_filter_handler')
+    include FileFilterHandler
+
     attr_reader :glade
     Widgets.each do |widget|
       define_method widget.underscore do
@@ -84,13 +87,7 @@ module VimMate
 
     # files_filter_term.signal_connect("changed", &changed_lambda)
     # files_filter_button.signal_connect("toggled", &changed_lambda)
-    def on_filter_changed
-      if files_filter_button.active?
-        @tree.filter = files_filter_term.text
-      else
-        @tree.clear_filter
-      end
-    end
+
 
     def on_key_pressed(window, event)
       if event.state & Gdk::Window::ModifierType::CONTROL_MASK != 0
