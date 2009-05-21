@@ -1,3 +1,4 @@
+module ActiveWindow
   # The ListItem is created on the fly
   #  * to oo-abstract methods to its TreeIter
   #  * for iteration in TreeController
@@ -104,17 +105,17 @@
     def self.build(attrs)
       if full_path = attrs[:full_path]
         if ::File.directory? full_path
-          ListedDirectory
+          'ListedDirectory'
         elsif ::File.file? full_path
-          ListedFile
+          'ListedFile'
         else
           self
         end
       elsif iter = attrs[:iter] and !iter[REFERENCED_TYPE].nil?
-        iter[REFERENCED_TYPE].constantize
+        iter[REFERENCED_TYPE]
       else
         self
-      end.new attrs
+      end.constantize.new attrs
     end
 
     def to_s
@@ -132,3 +133,4 @@
     end
 
   end
+end

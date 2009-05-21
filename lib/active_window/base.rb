@@ -2,7 +2,7 @@ module ActiveWindow
   class Base
     Root = File.expand_path(File.join( File.dirname(__FILE__), '..', '..'))
     include ActiveSupport::Callbacks
-    define_callbacks :after_initialize, :before_start
+    define_callbacks :after_initialize, :before_start, :after_show
 
     Dir.glob( File.join( Root, 'lib', 'handlers', '*_handler.rb') ).each do |path|
       require_dependency(path)
@@ -29,8 +29,13 @@ module ActiveWindow
     # Show the window and start the main loop. Also starts the
     def start
       run_callbacks :before_start
-      root.show_all
+      show
       Gtk.main_with_queue
+    end
+
+    def show
+      root.show_all
+      run_callbacks :after_show
     end
 
     def quit

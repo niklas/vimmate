@@ -1,4 +1,7 @@
-  class TreeController
+module ActiveWindow
+  class TreeWidget
+    include ActiveSupport::Callbacks
+    define_callbacks :after_initialize, :before_start
     attr_reader :references
     attr_reader :store, :sort_column, :model, :view
     def initialize(opts = {})
@@ -7,6 +10,7 @@
       initialize_model
       initialize_view
       initialize_columns
+      run_callbacks :after_initialize
     end
     def save_expands
       @expands = []
@@ -15,7 +19,7 @@
     end
 
     def restore_expands
-      view.collapse_all if VimMate::Config[:files_auto_expand_on_filter]
+      view.collapse_all if Config[:files_auto_expand_on_filter]
       unless @expands.nil? || @expands.empty?
         @expands.each do |path|
           view.expand_row(path, false)
@@ -120,3 +124,4 @@
     end
 
   end
+end

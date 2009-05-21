@@ -1,4 +1,4 @@
-  class ListedFile < ListedItem
+  class ListedFile < ActiveWindow::ListedItem
     column :full_path, String
     column :icon, Gdk::Pixbuf
     column :status, String

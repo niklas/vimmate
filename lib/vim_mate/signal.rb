@@ -1,6 +1,6 @@
 module VimMate
-  class UnknownSignalError < StandardError ; end
   class Signal
+    class UnknownSignalError < StandardError ; end
     @@signals = {}
 
     def self.on(name, &block)

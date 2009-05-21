@@ -1,20 +1,19 @@
-module VimMate
-  class FileTreeController < FilteredTreeController
+  class FileTreeController < ActiveWindow::FilteredTreeWidget
     def initialize(opts={})
       super
       @initial_add_in_progress = false
       @exclude = opts.delete(:exclude)
       
       # Callbacks
-      Signal.on_file_modified do |path|
+      VimMate::Signal.on_file_modified do |path|
         Gtk.queue do
           item_for(path).try(:refresh) if has_path?(path)
         end
       end
-      Signal.on_file_created do |path|
+      VimMate::Signal.on_file_created do |path|
         add_path(path)
       end
-      Signal.on_file_deleted do |path|
+      VimMate::Signal.on_file_deleted do |path|
         Gtk.queue do
           if has_path?(path)
             destroy_item(path) 
@@ -108,31 +107,27 @@ module VimMate
 
 
     private
-
     # Filter tree view so only directories and separators with matching
     # elements are set visible
     # FIXME make threadsave
-    def apply_filter
-      @found_count = 0
-      store.each do |model,path,iter|
-        if filtering?
-          if iter[ListedItem.referenced_type_column] == 'VimMate::ListedFile'
-            if iter_visible_through_filter? iter
-              @found_count += 1
-              item_for(iter).show!
-            else
-              iter[ListedItem.visible_column] = false
-            end
-          else
-            iter[ListedItem.visible_column] = false if iter.path
-          end
+    def applying_filter(model,path,iter)
+      if iter[ListedItem.referenced_type_column] == 'VimMate::ListedFile'
+        if iter_visible_through_filter? iter
+          @found_count += 1
+          item_for(iter).show!
         else
-          iter[ListedItem.visible_column] = true
+          iter[ListedItem.visible_column] = false
         end
+      else
+        iter[ListedItem.visible_column] = false if iter.path
       end
-      model.refilter
+    end
+
+    after_filter_applied :expand_all_if_wanted
+    def expand_all_if_wanted
       view.expand_all if filtering? and Config[:files_auto_expand_on_filter]
     end
+
 
     def create_or_find_item_by_path(full_file_path)
       if has_path?(full_file_path)
@@ -201,4 +196,3 @@ module VimMate
     end
 
   end
-end
