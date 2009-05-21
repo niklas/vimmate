@@ -33,6 +33,11 @@ module ActiveWindow
       Gtk.main_with_queue
     end
 
+    def quit
+      Gtk.main_quit
+    end
+
+
     def self.glade_path
       File.join( Root, 'interfaces', "#{glade_name}.glade")
     end
