@@ -1,6 +1,6 @@
 require File.dirname(__FILE__) + '/spec_helper'
 
-describe NiceSingleton do
+describe VimMate::NiceSingleton do
   before(:each) do
     class MySingleton
       include VimMate::NiceSingleton

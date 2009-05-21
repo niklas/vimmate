@@ -1,5 +1,3 @@
-require 'listed_file'
-module VimMate
   class ListedDirectory < ListedFile
     def sort_string
       "1-#{name}-1"
@@ -43,4 +41,3 @@ module VimMate
     end
 
   end
-end

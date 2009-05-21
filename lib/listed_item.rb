@@ -1,4 +1,3 @@
-module VimMate
   # The ListItem is created on the fly
   #  * to oo-abstract methods to its TreeIter
   #  * for iteration in TreeController
@@ -133,4 +132,3 @@ module VimMate
     end
 
   end
-end

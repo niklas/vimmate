@@ -14,6 +14,7 @@ module VimMate
           extend ClassMethods
           alias_method :initialize_without_inotify, :initialize
           alias_method :initialize, :initialize_with_inotify
+          #alias_method_chain :initialize, :notify
           start_inotify_watcher
         end
         
@@ -22,6 +23,7 @@ module VimMate
       module InstanceMethods
         def initialize_with_inotify(*args)
           initialize_without_inotify(*args)
+          # TODO need sematically better condition
           unless tree.has_path? full_path
             self.class.inotify_watcher.watch_dir(self.full_path, Mask) if directory?
           end

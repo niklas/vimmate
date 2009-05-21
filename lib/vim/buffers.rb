@@ -1,4 +1,3 @@
-module VimMate
   module Vim
     module Buffers
 
@@ -16,5 +15,4 @@ module VimMate
 
     end
   end
-end
 

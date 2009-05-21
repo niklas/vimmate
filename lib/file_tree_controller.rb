@@ -1,6 +1,3 @@
-require 'tree_controller_definitions'
-require 'filtered_tree_controller'
-require 'listed_directory'
 module VimMate
   class FileTreeController < FilteredTreeController
     def initialize(opts={})

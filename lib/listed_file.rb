@@ -1,5 +1,3 @@
-require 'listed_item'
-module VimMate
   class ListedFile < ListedItem
     column :full_path, String
     column :icon, Gdk::Pixbuf
@@ -8,8 +6,8 @@ module VimMate
       super
       if fp = opts[:full_path]
         self.full_path = fp
-        self.icon = Icons.by_name icon_name
-        self.status = "normal" if Config[:files_show_status]
+        self.icon = VimMate::Icons.by_name icon_name
+        self.status = "normal" if VimMate::Config[:files_show_status]
       end
     end
     def icon_name
@@ -17,8 +15,8 @@ module VimMate
     end
     def refresh
       Gtk.queue do
-        self.icon = Icons.by_name icon_name
-        self.status = "normal" if Config[:files_show_status]
+        self.icon = VimMate::Icons.by_name icon_name
+        self.status = "normal" if VimMate::Config[:files_show_status]
       end
     end
     def full_path=(new_full_path)
@@ -62,16 +60,16 @@ module VimMate
 
       # File name
       text_cell_renderer = Gtk::CellRendererText.new
-      if Config[:files_use_ellipsis]
+      if VimMate::Config[:files_use_ellipsis]
         text_cell_renderer.ellipsize = Pango::Layout::EllipsizeMode::MIDDLE
       end
       column.pack_start(text_cell_renderer, true)
       column.set_attributes(text_cell_renderer, :text => NAME)
       
       # Status
-      if Config[:files_show_status]
+      if VimMate::Config[:files_show_status]
         text_cell_renderer2 = Gtk::CellRendererText.new
-        if Config[:files_use_ellipsis]
+        if VimMate::Config[:files_use_ellipsis]
           text_cell_renderer2.ellipsize = Pango::Layout::EllipsizeMode::END
         end
         column.pack_start(text_cell_renderer2, true)
@@ -80,6 +78,4 @@ module VimMate
       column
     end
   end
-end
 
-require 'listed_directory'

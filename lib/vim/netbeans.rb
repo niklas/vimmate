@@ -1,4 +1,3 @@
-module VimMate
   module Vim
     module Netbeans
 
@@ -155,4 +154,3 @@ module VimMate
 
     end
   end
-end

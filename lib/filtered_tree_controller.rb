@@ -1,5 +1,3 @@
-require 'tree_controller'
-module VimMate
   class FilteredTreeController < TreeController
     attr_reader :filter_string
     def initialize(opts = {})
@@ -47,4 +45,3 @@ module VimMate
     end
 
   end
-end

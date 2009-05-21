@@ -1,4 +1,3 @@
-module VimMate
   class TreeController
     attr_reader :references
     attr_reader :store, :sort_column, :model, :view
@@ -16,7 +15,7 @@ module VimMate
     end
 
     def restore_expands
-      view.collapse_all if Config[:files_auto_expand_on_filter]
+      view.collapse_all if VimMate::Config[:files_auto_expand_on_filter]
       unless @expands.nil? || @expands.empty?
         @expands.each do |path|
           view.expand_row(path, false)
@@ -85,8 +84,8 @@ module VimMate
     def initialize_view
       @view = Gtk::TreeView.new(model)
       view.selection.mode = Gtk::SELECTION_SINGLE
-      view.headers_visible = Config[:file_headers_visible]
-      view.hover_selection = Config[:file_hover_selection]
+      view.headers_visible = VimMate::Config[:file_headers_visible]
+      view.hover_selection = VimMate::Config[:file_hover_selection]
       view.set_row_separator_func do |model, iter|
         iter[ListedItem.referenced_type_column] == 'Separator'
       end
@@ -121,4 +120,3 @@ module VimMate
     end
 
   end
-end

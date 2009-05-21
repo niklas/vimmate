@@ -27,23 +27,7 @@ SOFTWARE.
 # VimMate is a graphical add-on to Vim that was written and
 # is Copyright (C) 2006 Guillaume Benny
 #
-module VimMate
-end
-
-require 'rubygems'
-require 'activesupport'
-
-# Find the lib directory based on the path of this file
-lib_dir = File.join(File.dirname(__FILE__), "../lib")
-vimmate_lib_dir = File.join(lib_dir, "vimmatelib")
-# Add the lib directory in Ruby's search path
-$:.unshift(lib_dir) if File.directory? lib_dir
-$:.unshift(vimmate_lib_dir) if File.directory? vimmate_lib_dir
-
-require 'try'
-# Require the version
-require 'vimmatelib/version'
-
+require File.join( File.dirname(__FILE__), '../config/environment' )
 # Parse the command line arguments
 require 'optparse'
 exclude_file_list = []
@@ -72,37 +56,10 @@ end.parse!
 
 # We fork to give back the shell to the user, like Vim
 fork do
-  require 'vimmatelib/requirer'
-
-  VimMate::Requirer.require_exit('gtk2')
-  VimMate::Requirer.require_exit('libglade2')
-  require 'config'
-  require 'dummy_window'
-  require 'files_menu'
-  require 'icons'
-  require 'search_window'
-  #require 'vimmatelib/file_tree_view'
-  require 'file_tree_controller'
-  require 'signals'
-  require 'plugins'
-  require 'main_window'
-  require 'vim/integration'
-  require 'vim_window'
-  require 'tags_window'
-  require 'search_window'
-  require 'config_window'
-require 'gtk_thread_helper'
+  Thread.abort_on_exception = true
 
   # Create the main objects
-  main = VimMate::MainWindow.new
-  file_tree = VimMate::FileTreeController.new(:exclude => exclude_file_list)
-  main.tree_scroller.add(file_tree.view)
-
-  vim = VimMate::VimWindow.new
-  main.main_pane.pack2(vim.gtk_window, true, false) if vim
-
-  tag_tree = VimMate::TagsWindow.new(vim)
-  main.tags_scroller.add tag_tree.gtk_window
+  window = VimMate::Window.new
 
   #search_window = VimMate::SearchWindow.new(file_tree)
   #main.list_scroller.add search_window.gtk_window
@@ -132,11 +89,11 @@ require 'gtk_thread_helper'
   # If there are no files given, add the current directory to the file list.
   # If files are specified on the command line, use them
   if ARGV.empty?
-    file_tree.add_path(File.expand_path('.'))
-    file_tree.expand_first_row
+    window.file_tree.add_path(File.expand_path('.'))
+    window.file_tree.expand_first_row
   else
     ARGV.each do |file|
-      file_tree.add_path(File.expand_path(file))
+      window.file_tree.add_path(File.expand_path(file))
     end
   end
 
@@ -156,6 +113,6 @@ require 'gtk_thread_helper'
 #  end
 
   # Go!
-  main.start(vim)
+  window.start
 end
 

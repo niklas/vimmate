@@ -1,6 +1,4 @@
 require 'socket'
-require 'vim/buffers'
-require 'vim/netbeans'
 
 module VimMate
   module VimIntegration
