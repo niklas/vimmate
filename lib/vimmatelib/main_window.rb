@@ -37,8 +37,11 @@ module VimMate
 
   # Represents the main window of the application
   class MainWindow
-    require_dependency('handlers/file_filter_handler')
-    include FileFilterHandler
+
+    Dir.glob( File.join( File.dirname(__FILE__), '../handlers/*_handler.rb') ).each do |path|
+      require_dependency(path)
+      include path.split(%r(/)).last.sub(/\.rb$/,'').classify.constantize
+    end
 
     attr_reader :glade
     Widgets.each do |widget|
