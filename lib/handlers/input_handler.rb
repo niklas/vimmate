@@ -35,18 +35,18 @@ module InputHandler
           next nil
         end
       else
-        case event.keyval
-        # CTRL+PAGEDOWN: Next terminal
-        when Gdk::Keyval::GDK_Page_Down
-          terminals_window.next_terminal if terminals_window
-          next true
-        # CTRL+PAGEDOWN: Previous terminal
-        when Gdk::Keyval::GDK_Page_Up
-          terminals_window.prev_terminal if terminals_window
-          next true
-        else
-          next nil
-        end
+        #case event.keyval
+        ## CTRL+PAGEDOWN: Next terminal
+        #when Gdk::Keyval::GDK_Page_Down
+        #  terminals_window.next_terminal if terminals_window
+        #  next true
+        ## CTRL+PAGEDOWN: Previous terminal
+        #when Gdk::Keyval::GDK_Page_Up
+        #  terminals_window.prev_terminal if terminals_window
+        #  next true
+        #else
+        #  next nil
+        #end
       end
     end
     nil
