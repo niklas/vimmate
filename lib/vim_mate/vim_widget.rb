@@ -68,18 +68,18 @@ module VimMate
       start
       path = path.gsub "'", "\\'"
       case kind
-      when :open, :split_open
-        if kind == :split_open
-          remote_send '<ESC><ESC><ESC>:split<CR>'
-        end
-          exec_gvim "--remote '#{path}'"
-      when :tab_open
+      when :split
+        remote_send '<ESC><ESC><ESC>:split<CR>'
+      when :open, :split
+        exec_gvim "--remote '#{path}'"
+      when :tab
           exec_gvim "--remote-tab '#{path}'"
       else
         raise "Unknow open kind: #{kind}"
       end
       remote_send "<ESC><ESC><ESC>:buffer #{path}<CR>"
       focus_vim
+      Signal.emit_file_opened(path)
       self
     end
 

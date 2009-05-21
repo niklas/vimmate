@@ -39,10 +39,10 @@ module ActiveWindow
       end
     end
 
-    def on_row_activated
+    def on_row_activated(&block)
       view.signal_connect("row-activated") do |view, path, column|
         if row = selected_row
-          yield row, view, path, column
+          block.call row, view, path, column
         end
       end
     end

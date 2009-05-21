@@ -21,25 +21,16 @@ module VimMate
 
     after_initialize :setup_components
     def setup_components
+      # TODO re-enable excludes
+      # TODO local excludes
       @file_tree = VimMate::FileTreeController.new(:exclude => [])
       tree_scroller.add(file_tree.view)
 
       # Double-click, Enter, Space: Signal to open the file
-      file_tree.on_row_activated do |row, *args|
-        if row.file? && row.exists?
-          vim.open(row.full_path, Config[:files_default_open_in_tabs] ? :tab_open : :open)
-          Signal.emit_file_opened(row.full_path)
-        end
-      end
+      file_tree.on_row_activated &method(:on_file_tree_row_activated)
 
-      open_menu_for_row = lambda do |row, *args|
-        if row.file_or_directory?
-          STDERR.puts "show context menu"
-          #  menu.open(path)
-        end
-      end
-      file_tree.on_right_click &open_menu_for_row
-      file_tree.on_popup_menu &open_menu_for_row
+      file_tree.on_right_click &method(:open_file_popup)
+      file_tree.on_popup_menu &method(:open_file_popup)
 
       file_tree.on_selection_changed do |row|
         if row.file_or_directory?
@@ -62,6 +53,22 @@ module VimMate
       #menu.add_refresh_signal do
       #  files.refresh
       #end
+    end
+
+    def open_file_in_vim(row, mode=Config[:files_default_open_in_tabs] ? :tab : :open)
+      if row.file? && row.exists?
+        vim.open row.full_path, mode
+      end
+    end
+
+    def on_file_tree_row_activated(row, *args)
+      open_file_in_vim row
+    end
+
+    def open_file_popup(row, *args)
+      if row.file_or_directory?
+        file_popup.popup(nil, nil, 0, 0)
+      end
     end
 
     after_show :start_vim

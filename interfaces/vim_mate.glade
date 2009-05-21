@@ -213,4 +213,93 @@
       </widget>
     </child>
   </widget>
+  <widget class="GtkMenu" id="FilePopup">
+    <property name="visible">True</property>
+    <child>
+      <widget class="GtkImageMenuItem" id="OpenFile">
+        <property name="label">gtk-open</property>
+        <property name="visible">True</property>
+        <property name="use_underline">True</property>
+        <property name="use_stock">True</property>
+        <property name="always_show_image">True</property>
+        <signal name="activate" handler="on_open_file_clicked"/>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkMenuItem" id="SplitOpenFile">
+        <property name="visible">True</property>
+        <property name="label" translatable="yes">Split Open</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="on_split_open_file_clicked"/>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkMenuItem" id="TabOpenFile">
+        <property name="visible">True</property>
+        <property name="label" translatable="yes">Tab Open</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="on_tab_open_file_clicked"/>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkSeparatorMenuItem" id="sep1">
+        <property name="visible">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkImageMenuItem" id="NewFile">
+        <property name="label">gtk-new</property>
+        <property name="visible">True</property>
+        <property name="use_underline">True</property>
+        <property name="use_stock">True</property>
+        <signal name="activate" handler="on_new_file_clicked"/>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkImageMenuItem" id="NewDirectory">
+        <property name="label">gtk-add</property>
+        <property name="visible">True</property>
+        <property name="use_underline">True</property>
+        <property name="use_stock">True</property>
+        <signal name="activate" handler="on_new_directory_clicked"/>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkSeparatorMenuItem" id="sep2">
+        <property name="visible">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkImageMenuItem" id="RenameItem">
+        <property name="label">gtk-edit</property>
+        <property name="visible">True</property>
+        <property name="use_underline">True</property>
+        <property name="use_stock">True</property>
+        <signal name="activate" handler="on_rename_item_clicked"/>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkImageMenuItem" id="DeleteItem">
+        <property name="label">gtk-delete</property>
+        <property name="visible">True</property>
+        <property name="use_underline">True</property>
+        <property name="use_stock">True</property>
+        <signal name="activate" handler="on_delete_item_clicked"/>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkSeparatorMenuItem" id="sep3">
+        <property name="visible">True</property>
+      </widget>
+    </child>
+    <child>
+      <widget class="GtkImageMenuItem" id="RefreshItem">
+        <property name="label">gtk-refresh</property>
+        <property name="visible">True</property>
+        <property name="use_underline">True</property>
+        <property name="use_stock">True</property>
+        <signal name="activate" handler="on_refresh_item_clicked"/>
+      </widget>
+    </child>
+  </widget>
 </glade-interface>
