@@ -25,15 +25,29 @@ module VimMate
       tree_scroller.add(file_tree.view)
 
       # Double-click, Enter, Space: Signal to open the file
-      file_tree.view.signal_connect("row-activated") do |view, path, column|
-        if row = file_tree.selected_row and row.file?
+      file_tree.on_row_activated do |row, *args|
+        if row.file? && row.exists?
           vim.open(row.full_path, Config[:files_default_open_in_tabs] ? :tab_open : :open)
           Signal.emit_file_opened(row.full_path)
         end
       end
-      #file_tree.add_menu_signal do |path|
-      #  menu.open(path)
-      #end
+
+      open_menu_for_row = lambda do |row, *args|
+        if row.file_or_directory?
+          STDERR.puts "show context menu"
+          #  menu.open(path)
+        end
+      end
+      file_tree.on_right_click &open_menu_for_row
+      file_tree.on_popup_menu &open_menu_for_row
+
+      file_tree.on_selection_changed do |row|
+        if row.file_or_directory?
+          selected_path_label.text = File.join(row.full_path)
+        else
+          selected_path_label.text = ""
+        end
+      end
 
       @vim = VimMate::VimWidget.new
       main_pane.pack2(vim.window, true, false)

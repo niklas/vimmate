@@ -40,41 +40,7 @@ module VimMate
 
 
 
-      # Right-click: Select and Signal to open the menu
-      @tree.view.signal_connect("button_press_event") do |widget, event|
-        if event.kind_of? Gdk::EventButton and event.button == 3
-          path = @tree.view.get_path_at_pos(event.x, event.y)
-          @tree.view.selection.select_path(path[0]) if path
-
-          if selected = @tree.selected_row and selected.file_or_directory?
-            @menu_signal.each do |signal|
-              signal.call(selected.full_path)
-            end
-          end
-        end
-      end
-
-
-      # When a selection is changed in the tree view, we change the label
-      # to show the path of the file
-      @tree.view.selection.signal_connect("changed") do
-        if selected = @tree.selected_row and selected.file_or_directory?
-          selected_path_label.text = File.join(selected.full_path)
-        else
-          selected_path_label.text = ""
-        end
-      end
       
-      # Same thing as Right-click, but with the keyboard
-      @tree.view.signal_connect("popup_menu") do
-        if selected = @tree.selected_row and selected.file_or_directory?
-          @menu_signal.each do |signal|
-            signal.call(selected.full_path)
-          end
-        end
-      end
-
-
       # Create the search file list if it's enabled
       if Config[:files_use_search]
         # Set the signals for the search window
