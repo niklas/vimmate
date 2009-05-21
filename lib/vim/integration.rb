@@ -1,12 +1,12 @@
 require 'socket'
 
-module VimMate
-  module VimIntegration
+module Vim
+  module Integration
 
     Password = 'donthasslethehoff'
 
-    include Vim::Buffers
-    include Vim::Netbeans
+    include Buffers
+    include Netbeans
 
     private
     def listen
