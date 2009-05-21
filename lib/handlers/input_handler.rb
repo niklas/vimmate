@@ -1,4 +1,4 @@
-module InputHelper
+module InputHandler
   def on_key_pressed(window, event)
     if event.state & Gdk::Window::ModifierType::CONTROL_MASK != 0
       if event.state & Gdk::Window::ModifierType::SHIFT_MASK != 0
