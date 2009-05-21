@@ -24,15 +24,6 @@ SOFTWARE.
 require 'gtk2'
 require 'set'
 require 'thread'
-require 'vimmatelib/config'
-#require 'vimmatelib/files'
-require 'vimmatelib/icons'
-require 'vimmatelib/search_window'
-#require 'vimmatelib/file_tree_view'
-require 'file_tree_controller'
-require 'signals'
-require 'vimmatelib/plugins'
-
 module VimMate
 
   # The window that contains the file tree
@@ -47,7 +38,6 @@ module VimMate
       # FIXME find a better place for that
       Thread.abort_on_exception = true
 
-      @tree = FileTreeController.new(:exclude => exclude_file_list)
 
       # Double-click, Enter, Space: Signal to open the file
       @tree.view.signal_connect("row-activated") do |view, path, column|
@@ -75,16 +65,14 @@ module VimMate
         end
       end
 
-      # Create a label to show the path of the file
-      gtk_label = Gtk::Label.new
-      gtk_label.ellipsize = Pango::Layout::EllipsizeMode::START
 
       # When a selection is changed in the tree view, we change the label
       # to show the path of the file
       @tree.view.selection.signal_connect("changed") do
-        gtk_label.text = ""
         if selected = @tree.selected_row and selected.file_or_directory?
-          gtk_label.text = File.join(selected.full_path)
+          selected_path_label.text = File.join(selected.full_path)
+        else
+          selected_path_label.text = ""
         end
       end
       
@@ -97,51 +85,9 @@ module VimMate
         end
       end
 
-      # Put the tree view in a scroll window
-      @gtk_scrolled_window = Gtk::ScrolledWindow.new
-      @gtk_scrolled_window.set_policy(Gtk::POLICY_AUTOMATIC,
-                                      Gtk::POLICY_AUTOMATIC)
-      @gtk_scrolled_window.add(@tree.view)
-      
-      # Set the default size for the file list
-      @gtk_scrolled_window.set_size_request(Config[:files_opened_width], -1)
-
-      # Create a box to filter the list
-      gtk_filter_box = Gtk::HBox.new
-      gtk_filter_box.pack_start(gtk_filter_button = Gtk::ToggleButton.new("Filter"), false, false)
-      gtk_filter_box.pack_start(@gtk_file_filter_entry = Gtk::Entry.new, true, true)
-      changed_lambda = lambda do
-        if gtk_filter_button.active?
-          @tree.filter = @gtk_file_filter_entry.text
-        else
-          @tree.clear_filter
-        end
-      end
-      @gtk_file_filter_entry.signal_connect("changed", &changed_lambda)
-      gtk_filter_button.signal_connect("toggled", &changed_lambda)
-      gtk_filter_button.active = Config[:files_filter_active]
-      gtk_filter_box.spacing = 10
-      gtk_filter_box.border_width = 10
-      
-      @gtk_top_box = Gtk::VBox.new
-      @gtk_top_box.pack_start(gtk_filter_box, false, false)
-      @gtk_top_box.pack_start(@gtk_scrolled_window, true, true)
-      @gtk_top_box.pack_start(gtk_label, false, false)
-
-      config_button = Gtk::Button.new("conf")
-      config_button.signal_connect "pressed" do
-        config_window = VimMate::ConfigWindow.new
-      end
-      @gtk_top_box.pack_start(config_button,false,false)
-
 
       # Create the search file list if it's enabled
       if Config[:files_use_search]
-        @gtk_paned_box = Gtk::VPaned.new
-        @gtk_paned_box.add(@gtk_top_box)
-        @gtk_paned_box.add((@search_window = SearchWindow.new(@file_tree)).gtk_window)
-        @gtk_paned_box.position = Config[:files_search_separator_position]
-
         # Set the signals for the search window
         @search_window.add_open_signal do |path, kind|
           @open_signal.each do |signal|
@@ -154,8 +100,6 @@ module VimMate
           end
         end
       end
-
-      gtk_window.border_width = 3
     end
 
     # Recursively add a path at the root of the tree
@@ -166,11 +110,12 @@ module VimMate
 
     # The "window" for this object
     def gtk_window
-      if Config[:files_use_search]
-        @gtk_paned_box
-      else
-        @gtk_top_box
-      end
+      #if Config[:files_use_search]
+      #  @gtk_paned_box
+      #else
+      #  @gtk_top_box
+      #end
+      glade['MainWindow']
     end
 
     # Refresh the file list
@@ -186,7 +131,7 @@ module VimMate
 
     # Set the focus to the file filter
     def focus_file_filter
-      @gtk_file_filter_entry.has_focus = true if @gtk_file_filter_entry
+      files_filter_term.has_focus = true if files_filter_term
     end
 
     # Set the focus to the file list

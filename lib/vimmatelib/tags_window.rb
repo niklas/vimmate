@@ -92,13 +92,7 @@ module VimMate
       #gtk_text_view.editable = false
       #gtk_text_view.cursor_visible = false
 
-      @gtk_scrolled_window_tags = Gtk::ScrolledWindow.new
-      @gtk_scrolled_window_tags.set_policy(Gtk::POLICY_AUTOMATIC,
-                                      Gtk::POLICY_AUTOMATIC)
-      @gtk_scrolled_window_tags.add(@tags_tree_view)
-      
       # Set the default size for the file list
-      @gtk_scrolled_window_tags.set_size_request(Config[:files_opened_width], -1)
      
       Signal.on_file_modified do |path|
         paths = @vim_window.get_all_buffer_paths
@@ -118,7 +112,7 @@ module VimMate
     
     # The "window" for this object
     def gtk_window
-      @gtk_scrolled_window_tags
+      @tags_tree_view
     end
 
     #TODO:

@@ -21,10 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 =end
 
-require 'gtk2'
 require 'set'
 require 'vte'
-require 'vimmatelib/config'
 
 module VimMate
 

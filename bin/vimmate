@@ -69,105 +69,77 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-require 'vimmatelib/requirer'
-
-VimMate::Requirer.require_exit('gtk2')
 
 # We fork to give back the shell to the user, like Vim
 fork do
-  require 'vimmatelib/config'
-  require 'vimmatelib/dummy_window'
-  require 'vimmatelib/files_menu'
-  require 'vimmatelib/files_window'
-  require 'vimmatelib/sidebar_window'
-  require 'vimmatelib/main_window'
-  require 'vimmatelib/vim_window'
+  require 'vimmatelib/requirer'
+
+  VimMate::Requirer.require_exit('gtk2')
+  VimMate::Requirer.require_exit('libglade2')
+  require 'config'
+  require 'dummy_window'
+  require 'files_menu'
+  require 'icons'
+  require 'search_window'
+  #require 'vimmatelib/file_tree_view'
+  require 'file_tree_controller'
+  require 'signals'
+  require 'plugins'
+  require 'main_window'
+  require 'vim/integration'
+  require 'vim_window'
+  require 'tags_window'
+  require 'search_window'
   require 'config_window'
+require 'gtk_thread_helper'
 
   # Create the main objects
   main = VimMate::MainWindow.new
-  vim = VimMate::VimWindow.new
-  files = VimMate::FilesWindow.new(exclude_file_list, vim)
-  sidebar = VimMate::SidebarWindow.new(files.gtk_window, vim)
-  menu = VimMate::FilesMenu.new(main)
-  
-  terminals = VimMate::Requirer.require_if('vimmatelib/terminals_window', VimMate::DummyWindow.new) do
-    VimMate::TerminalsWindow.new
-  end
+  file_tree = VimMate::FileTreeController.new(:exclude => exclude_file_list)
+  main.tree_scroller.add(file_tree.view)
 
-  main.files_window = files if files
-  main.vim_window = vim if vim
-  if not terminals.nil? and not terminals.is_a?(VimMate::DummyWindow)
-    main.terminals_window = terminals
-  end
+  vim = VimMate::VimWindow.new
+  main.main_pane.pack2(vim.gtk_window, true, false) if vim
+
+  tag_tree = VimMate::TagsWindow.new(vim)
+  main.tags_scroller.add tag_tree.gtk_window
+
+  #search_window = VimMate::SearchWindow.new(file_tree)
+  #main.list_scroller.add search_window.gtk_window
+
+  #menu = VimMate::FilesMenu.new(main)
+  
+#  terminals = VimMate::Requirer.require_if('vimmatelib/terminals_window', VimMate::DummyWindow.new) do
+#    VimMate::TerminalsWindow.new
+#  end
 
   # Set the signals for the file list
-  files.add_open_signal do |path, kind|
-    vim.open(path, kind)
-  end
-  files.add_menu_signal do |path|
-    menu.open(path)
-  end
-
+#  file_tree.view.add_open_signal do |path, kind|
+#    vim.open(path, kind)
+#  end
+#  file_tree.add_menu_signal do |path|
+#    menu.open(path)
+#  end
+#
   # Set the signals for the file menu
-  menu.add_open_signal do |path, kind|
-    vim.open(path, kind)
-  end
-  menu.add_refresh_signal do
-    files.refresh
-  end
-
-  # When there are no files, add the current directory to the file list.
+#  menu.add_open_signal do |path, kind|
+#    vim.open(path, kind)
+#  end
+#  menu.add_refresh_signal do
+#    files.refresh
+#  end
+#
+  # If there are no files given, add the current directory to the file list.
   # If files are specified on the command line, use them
   if ARGV.empty?
-    files.add_path(File.expand_path('.'))
-    files.expand_first_row
+    file_tree.add_path(File.expand_path('.'))
+    file_tree.expand_first_row
   else
     ARGV.each do |file|
-      files.add_path(File.expand_path(file))
+      file_tree.add_path(File.expand_path(file))
     end
   end
 
-  # Create the pane for each part of the UI
-  if VimMate::Config[:layout_big_terminals]
-    # -------------
-    # | F |       |
-    # | i |       |
-    # | l |  Vim  |
-    # | e |       |
-    # | s |       |
-    # -------------
-    # | Terminals |
-    # -------------
-    gtk_top_pane = Gtk::HPaned.new
-    gtk_top_pane.add(sidebar.gtk_window)
-    gtk_top_pane.add(vim.gtk_window)
-    gtk_file_expander = gtk_top_pane
-
-    gtk_full_pane = Gtk::VPaned.new
-    gtk_full_pane.add(gtk_top_pane)
-    gtk_full_pane.pack2(terminals.gtk_window, false, false)
-  else
-    # -------------
-    # |   |       |
-    # | F |       |
-    # | i |  Vim  |
-    # | l |       |
-    # | e |       |
-    # | s ---------
-    # |   | Term  |
-    # -------------
-    gtk_right_pane = Gtk::VPaned.new
-    gtk_right_pane.add(vim.gtk_window)
-    gtk_right_pane.pack2(terminals.gtk_window, false, false)
-
-    gtk_full_pane = Gtk::HPaned.new
-    gtk_full_pane.pack1(sidebar.gtk_window, false, true)
-    gtk_full_pane.add(gtk_right_pane)
-    gtk_file_expander = gtk_full_pane
-  end
-
-  main.gtk_window.add(gtk_full_pane)
 
 # React when the file list is expanded or closed
 #  previous_separator_position = VimMate::Config[:files_opened_width]

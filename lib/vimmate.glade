@@ -2,9 +2,10 @@
 <glade-interface>
   <!-- interface-requires gtk+ 2.16 -->
   <!-- interface-naming-policy project-wide -->
-  <widget class="GtkWindow" id="window1">
+  <widget class="GtkWindow" id="MainWindow">
+    <signal name="key_press_event" handler="on_key_pressed"/>
     <child>
-      <widget class="GtkHPaned" id="SidePane">
+      <widget class="GtkHPaned" id="MainPane">
         <property name="visible">True</property>
         <property name="can_focus">True</property>
         <child>
@@ -48,12 +49,13 @@
                     </child>
                   </widget>
                   <packing>
+                    <property name="expand">False</property>
                     <property name="padding">7</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkVPaned" id="SidePan">
+                  <widget class="GtkVPaned" id="FilesPane">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="orientation">vertical</property>
@@ -76,11 +78,14 @@
                           </packing>
                         </child>
                         <child>
-                          <widget class="GtkLabel" id="SelectedPath">
+                          <widget class="GtkLabel" id="SelectedPathLabel">
                             <property name="visible">True</property>
                             <property name="label" translatable="yes">---</property>
+                            <property name="ellipsize">start</property>
                           </widget>
                           <packing>
+                            <property name="expand">False</property>
+                            <property name="padding">3</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -164,7 +169,7 @@
                   </packing>
                 </child>
                 <child>
-                  <widget class="GtkScrolledWindow" id="scrolledwindow1">
+                  <widget class="GtkScrolledWindow" id="TagsScroller">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="hscrollbar_policy">automatic</property>

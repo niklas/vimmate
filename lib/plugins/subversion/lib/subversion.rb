@@ -25,7 +25,6 @@ require 'svn/core'
 require 'svn/client'
 require 'svn/wc'
 require 'svn/repos'
-require 'vimmatelib/config'
 require 'vimmatelib/nice_singleton'
 require 'vimmatelib/requirer'
 

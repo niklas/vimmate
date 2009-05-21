@@ -21,9 +21,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 =end
 
-require 'gtk2'
-require 'vimmatelib/config'
-require 'vim/integration'
 
 module VimMate
 

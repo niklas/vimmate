@@ -1,8 +1,3 @@
-class String
-  def humanize
-    gsub(/_/, " ").capitalize
-  end
-end
 module VimMate
   class ConfigWindow
     attr_reader :container

@@ -21,12 +21,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 =end
 
-require 'gtk2'
 require 'fileutils'
 require 'set'
-require 'vimmatelib/config'
-require 'vimmatelib/requirer'
-
 module VimMate
 
   # The pop-up menu used in the file tree
