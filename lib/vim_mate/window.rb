@@ -71,6 +71,21 @@ module VimMate
       end
     end
 
+    # Set the focus to the file filter
+    def focus_file_filter
+      files_filter_term.has_focus = true
+    end
+
+    # Set the focus to the file list
+    def focus_file_list
+      file_tree.view.has_focus = true
+    end
+
+    # Set the focus to the search file list
+    def focus_file_search
+      @search_window.focus_file_search if @search_window
+    end
+
     after_show :start_vim
     def start_vim
       vim.start
