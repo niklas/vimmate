@@ -16,6 +16,10 @@ module ActiveWindow
         def columns
           self.class.columns
         end
+
+        def used_columns
+          self.class.used_columns
+        end
       end
 
       module ClassMethods
@@ -30,6 +34,10 @@ module ActiveWindow
               #{index}
             end
           EOCODE
+        end
+
+        def used_columns
+          columns.reject(&:virtual?)
         end
 
 
