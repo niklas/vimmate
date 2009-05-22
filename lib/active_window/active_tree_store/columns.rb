@@ -30,7 +30,11 @@ module ActiveWindow
         end
 
         def column_count
-          read_inheritable_attribute(:columns).size
+          columns.size
+        end
+
+        def column_classes
+          column_definitions.map(&:last)
         end
       end
     end

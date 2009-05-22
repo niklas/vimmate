@@ -22,6 +22,10 @@ describe ActiveWindow::ActiveTreeStore do
     @ats::OBJECT.should == 1
   end
 
+  it "should provide classes for columns" do
+    @ats.column_classes.should == [TrueClass, Object]
+  end
+
   describe "subclassing with two columns" do
     before( :each ) do
       class PersonTree < @ats
@@ -46,6 +50,9 @@ describe ActiveWindow::ActiveTreeStore do
       PersonTree::OBJECT.should == 1
       PersonTree::NAME.should == 2
       PersonTree::AGE.should == 3
+    end
+    it "should provde classes for columns" do
+      PersonTree.column_classes.should == [TrueClass, Object, String, Fixnum]
     end
     it "should store column index in hash" do
       PersonTree.columns.should == {:visible => 0, :object => 1, :name => 2, :age => 3}
@@ -89,6 +96,10 @@ describe ActiveWindow::ActiveTreeStore do
       LemonTree::VISIBLE.should == 0
       LemonTree::OBJECT.should == 1
       LemonTree::LEMON_COUNT.should == 2
+    end
+    it "should provde classes for columns" do
+      AppleTree.column_classes.should == [TrueClass, Object, Fixnum]
+      LemonTree.column_classes.should == [TrueClass, Object, Fixnum]
     end
   end
 end
