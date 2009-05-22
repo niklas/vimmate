@@ -270,12 +270,10 @@
       </widget>
     </child>
     <child>
-      <widget class="GtkImageMenuItem" id="RenameItem">
-        <property name="label">gtk-edit</property>
+      <widget class="GtkMenuItem" id="RenameItem">
         <property name="visible">True</property>
+        <property name="label" translatable="yes">Rename</property>
         <property name="use_underline">True</property>
-        <property name="use_stock">True</property>
-        <signal name="activate" handler="on_rename_item_clicked"/>
       </widget>
     </child>
     <child>
