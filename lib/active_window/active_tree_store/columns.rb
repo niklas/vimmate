@@ -3,24 +3,27 @@ module ActiveWindow
     module Columns
       def self.included(base)
         base.class_eval do
+          class_inheritable_accessor :id
+          write_inheritable_attribute :id, {}
           class_inheritable_accessor :columns
-          write_inheritable_attribute :columns, {}
-          class_inheritable_accessor :column_definitions
-          write_inheritable_attribute :column_definitions, []
+          write_inheritable_attribute :columns, []
           include InstanceMethods
           extend ClassMethods
         end
       end
 
       module InstanceMethods
+        def columns
+          self.class.columns
+        end
       end
 
       module ClassMethods
-        def column(label,type)
-          return if columns.has_key?(label.to_sym) # do not double-define
+        def column(label,type, opts={})
+          return if id.has_key?(label.to_sym) # do not double-define
           index = column_count
-          columns[label.to_sym] = index
-          column_definitions << ActiveColumn.create(index, label, type)
+          id[label.to_sym] = index
+          columns << ActiveColumn.create(index, label, type, opts)
           const_set label.to_s.upcase, index
           class_eval <<-EOCODE
             def self.#{label}_column
@@ -29,12 +32,13 @@ module ActiveWindow
           EOCODE
         end
 
+
         def column_count
           columns.size
         end
 
         def column_classes
-          column_definitions.map(&:klass)
+          columns.map(&:klass)
         end
       end
     end

@@ -12,7 +12,7 @@ ActiveColumn is used to define columns for ActiveTreeStore
     ##
     ## column: ActiveRecord::ConnectionAdapters::MysqlColumn
     ##
-    def self.create(id, name, klass=String)
+    def self.create(id, name, klass=String, opts={})
       subclass = case klass # ignore warning this creates
         when String:     ActiveTextColumn
         when Time;       ActiveDateColumn
@@ -21,14 +21,19 @@ ActiveColumn is used to define columns for ActiveTreeStore
         when TrueClass, FalseClass;   ActiveToggleColumn
         else; self
       end
-      return subclass.new(id, name.to_s, klass)
+      return subclass.new(id, name.to_s, klass, opts)
     end
     
-    def initialize(id, name, klass)
+    def initialize(id, name, klass, opts={})
       self.id = id
       self.name = name
       self.klass = klass
+      @virtual = true if opts[:virtual] == true
       #puts 'new column: %s %s' % [self.class, name]
+    end
+
+    def virtual?
+      @virtual
     end
     
     ## return a Gtk::TreeViewColumn appropriate for showing this column

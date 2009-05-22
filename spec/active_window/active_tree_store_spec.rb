@@ -8,13 +8,13 @@ describe ActiveWindow::ActiveTreeStore do
     @ats.should < Gtk::TreeStore
   end
   it "should store columns" do
-    @ats.columns.should_not be_nil
-    @ats.columns.should be_a(Hash)
+    @ats.id.should_not be_nil
+    @ats.id.should be_a(Hash)
   end
 
   it "should have basic columns" do
-    @ats.columns.should have_key(:visible)
-    @ats.columns.should have_key(:object)
+    @ats.id.should have_key(:visible)
+    @ats.id.should have_key(:object)
   end
 
   it "should store column index in constants" do
@@ -26,7 +26,7 @@ describe ActiveWindow::ActiveTreeStore do
     @ats.column_classes.should == [TrueClass, Object]
   end
 
-  describe "subclassing with two columns" do
+  describe "subclassing for Person with name and age" do
     before( :each ) do
       class PersonTree < @ats
         column :name, String
@@ -35,12 +35,12 @@ describe ActiveWindow::ActiveTreeStore do
     end
 
     it "should still have basic columns" do
-      PersonTree.columns.should have_key(:visible)
-      PersonTree.columns.should have_key(:object)
+      PersonTree.id.should have_key(:visible)
+      PersonTree.id.should have_key(:object)
     end
     it "should have both new columns defined" do
-      PersonTree.columns.should have_key(:name)
-      PersonTree.columns.should have_key(:age)
+      PersonTree.id.should have_key(:name)
+      PersonTree.id.should have_key(:age)
     end
     it "should have 4 columns" do
       PersonTree.column_count.should == 4
@@ -55,8 +55,28 @@ describe ActiveWindow::ActiveTreeStore do
       PersonTree.column_classes.should == [TrueClass, Object, String, Fixnum]
     end
     it "should store column index in hash" do
-      PersonTree.columns.should == {:visible => 0, :object => 1, :name => 2, :age => 3}
+      PersonTree.id.should == {:visible => 0, :object => 1, :name => 2, :age => 3}
     end
+
+
+    describe "instancing" do
+      before( :each ) do
+        @person_tree = PersonTree.new
+      end
+      
+      describe "adding a Person" do
+        before( :each ) do
+          @person = mock(:name => 'Kate', :age => 23)
+        end
+
+        it "should succeed" do
+          lambda { @person_tree.add @person }.should_not raise_error
+        end
+        
+      end
+      
+    end
+
   end
 
   describe "subclassing twice with different columns" do
@@ -70,18 +90,18 @@ describe ActiveWindow::ActiveTreeStore do
     end
 
     it "should both still have basic columns" do
-      AppleTree.columns[:visible].should == 0
-      AppleTree.columns[:object].should == 1
-      LemonTree.columns[:visible].should == 0
-      LemonTree.columns[:object].should == 1
+      AppleTree.id[:visible].should == 0
+      AppleTree.id[:object].should == 1
+      LemonTree.id[:visible].should == 0
+      LemonTree.id[:object].should == 1
     end
     it "should define columns for both subclasses" do
-      AppleTree.columns[:apple_count].should == 2
-      LemonTree.columns[:lemon_count].should == 2
+      AppleTree.id[:apple_count].should == 2
+      LemonTree.id[:lemon_count].should == 2
     end
     it "should keep the new columns to their Classes" do
-      AppleTree.columns.should_not have_key(:lemon_count)
-      LemonTree.columns.should_not have_key(:apple_count)
+      AppleTree.id.should_not have_key(:lemon_count)
+      LemonTree.id.should_not have_key(:apple_count)
     end
     it "should both have 3 columns" do
       AppleTree.column_count.should == 3
