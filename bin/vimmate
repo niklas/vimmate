@@ -30,7 +30,7 @@ SOFTWARE.
 require File.join( File.dirname(__FILE__), '../config/environment' )
 # Parse the command line arguments
 require 'optparse'
-exclude_file_list = []
+excludes = []
 OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename($0)} [options] [files or directories]"
 
@@ -43,8 +43,8 @@ OptionParser.new do |opts|
   opts.on("-x",
           "--exclude file1,file2,file3",
           Array,
-          "Comma separated list of files or directory to exclude.") do |file_list|
-    exclude_file_list = file_list
+          "Comma separated list of files or directory to exclude.") do |list|
+    excludes = list
   end
 
   opts.on_tail("-h", "--help", "Show this help screen") do |string|
@@ -53,6 +53,18 @@ OptionParser.new do |opts|
   end
 end.parse!
 
+
+# Ignore patterns from .vimmate_ignore
+local_ignore_file = File.expand_path('.vimmate_ignore')
+if File.exists?(local_ignore_file)
+  File.open(local_ignore_file) do |f|
+    while line = f.gets 
+      line.chomp!.strip!
+      excludes << line unless line.blank?
+    end
+  end
+end
+
 # We fork to give back the shell to the user, like Vim
 fork do
   Thread.abort_on_exception = true
@@ -60,16 +72,12 @@ fork do
   # Create the main objects
   window = VimMate::Window.new
 
-  #search_window = VimMate::SearchWindow.new(file_tree)
-  #main.list_scroller.add search_window.gtk_window
+  excludes.each do |pattern|
+    window.file_tree.exclude! pattern
+  end
 
-  #menu = VimMate::FilesMenu.new(main)
-  
-#  terminals = VimMate::Requirer.require_if('vimmatelib/terminals_window', VimMate::DummyWindow.new) do
-#    VimMate::TerminalsWindow.new
-#  end
+  window.show
 
-#
   # If there are no files given, add the current directory to the file list.
   # If files are specified on the command line, use them
   if ARGV.empty?
@@ -77,26 +85,13 @@ fork do
     window.file_tree.expand_first_row
   else
     ARGV.each do |file|
-      window.file_tree.add_path(File.expand_path(file))
+      path = File.expand_path(file)
+      window.file_tree.add_path(path)
+      window.vim.open(path, :tab)
     end
   end
 
 
-# React when the file list is expanded or closed
-#  previous_separator_position = VimMate::Config[:files_opened_width]
-#  files.add_expander_signal do |expanded|
-#    if expanded
-#      gtk_file_expander.position = previous_separator_position
-#    else
-#      previous_separator_position = gtk_file_expander.position
-#      gtk_file_expander.position = VimMate::Config[:files_closed_width]
-#    end
-#  end
-#  unless VimMate::Config[:files_expanded]
-#    gtk_file_expander.position = VimMate::Config[:files_closed_width]
-#  end
-
-  # Go!
   window.start
 end
 

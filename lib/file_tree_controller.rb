@@ -2,7 +2,7 @@
     def initialize(opts={})
       super
       @initial_add_in_progress = false
-      @exclude = opts.delete(:exclude)
+      @excludes = opts.delete(:excludes) || opts.delete(:exclude) || []
       
       # Callbacks
       VimMate::Signal.on_file_modified do |path|
@@ -104,6 +104,14 @@
       end
     end
 
+    # Path ends with a node name contained in the exclude list
+    def excludes?(path)
+      @excludes.any?  {|f| path[-(f.size+1)..-1] == "/#{f}" }
+    end
+
+    def exclude!(new_exclude)
+      @excludes << new_exclude
+    end
 
 
     private
@@ -158,11 +166,6 @@
       #@message_row = store.append(nil)
       #  @message_row[REFERENCED_TYPE] = TYPE_MESSAGE
       #  @message_row[NAME] = "nothing found"
-    end
-
-    # Path ends with a node name contained in the exclude list
-    def excludes?(path)
-      @exclude.any?  {|f| path[-(f.size+1)..-1] == "/#{f}" }
     end
 
     private
