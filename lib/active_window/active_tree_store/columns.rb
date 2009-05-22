@@ -20,7 +20,7 @@ module ActiveWindow
           return if columns.has_key?(label.to_sym) # do not double-define
           index = column_count
           columns[label.to_sym] = index
-          column_definitions << [label.to_sym, type]
+          column_definitions << ActiveColumn.create(index, label, type)
           const_set label.to_s.upcase, index
           class_eval <<-EOCODE
             def self.#{label}_column
@@ -34,7 +34,7 @@ module ActiveWindow
         end
 
         def column_classes
-          column_definitions.map(&:last)
+          column_definitions.map(&:klass)
         end
       end
     end
