@@ -18,6 +18,13 @@ class ActiveWindow::Application
     run_callbacks :after_initialize
   end
 
+  def start
+    setup
+    post_setup
+    window.show
+    Gtk.main
+  end
+
   def default_database
     @dot_file_prefs[:db]
   end
@@ -57,7 +64,6 @@ class ActiveWindow::Application
   def post_setup
     controller.each do |name,ctrl|
       ctrl.post_setup
-      puts 'calling %s.%s' % [ctrl,'post_setup']
     end
   end
   
@@ -102,9 +108,14 @@ class ActiveWindow::Application
   end
   
   def find_glade
-    Dir.glob("#{File.dirname($0)}/views/*.glade") do |f|
+    Dir.glob("#{views_directory}/*.glade") do |f|
       return f
     end
+    raise "could not find a .glade file in #{views_directory}"
+  end
+
+  def views_directory
+    File.expand_path File.join(File.dirname($0), '..', 'views')
   end
 
   def define_widget_readers

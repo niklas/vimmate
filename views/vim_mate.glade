@@ -41,7 +41,7 @@
                         <property name="focus_on_click">False</property>
                         <property name="active">True</property>
                         <property name="draw_indicator">True</property>
-                        <signal name="toggled" handler="on_filter_changed"/>
+                        <signal name="toggled" handler="vim_mate.warn"/>
                       </widget>
                       <packing>
                         <property name="expand">False</property>

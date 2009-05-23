@@ -41,29 +41,36 @@ end
 fork do
   Thread.abort_on_exception = true
 
-  # Create the main objects
-  window = VimMate::Window.new
-
-  excludes.each do |pattern|
-    window.file_tree.exclude! pattern
+  class VimMateApp < ActiveWindow::Application
   end
 
-  window.show
+  PROGRAM_NAME = 'vim_mate'
+  app = VimMateApp.new(:title => 'VimMate', :main_window => 'VimMate')
+  app.start
 
-  # If there are no files given, add the current directory to the file list.
-  # If files are specified on the command line, use them
-  if ARGV.empty?
-    window.file_tree.add_path(File.expand_path('.'))
-    window.file_tree.expand_first_row
-  else
-    ARGV.each do |file|
-      path = File.expand_path(file)
-      window.file_tree.add_path(path)
-      window.vim.open(path, :tab)
-    end
-  end
+  ## Create the main objects
+  #window = VimMate::Window.new
+
+  #excludes.each do |pattern|
+  #  window.file_tree.exclude! pattern
+  #end
+
+  #window.show
+
+  ## If there are no files given, add the current directory to the file list.
+  ## If files are specified on the command line, use them
+  #if ARGV.empty?
+  #  window.file_tree.add_path(File.expand_path('.'))
+  #  window.file_tree.expand_first_row
+  #else
+  #  ARGV.each do |file|
+  #    path = File.expand_path(file)
+  #    window.file_tree.add_path(path)
+  #    window.vim.open(path, :tab)
+  #  end
+  #end
 
 
-  window.start
+  #window.start
 end
 

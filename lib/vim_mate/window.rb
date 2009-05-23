@@ -8,15 +8,6 @@ module VimMate
     after_initialize :setup_layout_from_config
     def setup_layout_from_config
       window.title           = Config[:window_title]
-      window.set_default_size( Config[:window_width],
-                               Config[:window_height])
-      window.set_icon_list(Icons.window_icons)
-
-      tree_scroller.set_size_request(Config[:files_opened_width], -1)
-
-      files_filter_button.active = Config[:files_filter_active]
-
-      files_pane.position = Config[:files_search_separator_position]
     end
 
     after_initialize :setup_components
