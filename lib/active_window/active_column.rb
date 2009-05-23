@@ -42,6 +42,7 @@ ActiveColumn is used to define columns for ActiveTreeStore
 
     ## return the class of the value held for this column in the model
     def data_class
+      klass
     end
     
     ## given an active record object, return the attribute
