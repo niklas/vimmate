@@ -74,8 +74,9 @@ describe ActiveWindow::ActiveTreeStore do
         end
         
       end
-      
+
     end
+
 
   end
 

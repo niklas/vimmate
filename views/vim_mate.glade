@@ -72,7 +72,10 @@
                             <property name="hscrollbar_policy">automatic</property>
                             <property name="vscrollbar_policy">automatic</property>
                             <child>
-                              <placeholder/>
+                              <widget class="GtkTreeView" id="FileTreeView">
+                                <property name="visible">True</property>
+                                <property name="can_focus">True</property>
+                              </widget>
                             </child>
                           </widget>
                           <packing>

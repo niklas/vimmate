@@ -18,8 +18,8 @@ class VimMateController < ActiveWindow::Controller
     @vim = VimMate::VimWidget.new
     main_pane.pack2(vim.window, true, false)
 
-    @tags_tree = VimMate::TagsWindow.new(@vim)
-    tags_scroller.add @tags_tree.gtk_window
+    #@tags_tree = VimMate::TagsWindow.new(@vim)
+    #tags_scroller.add @tags_tree.gtk_window
 
     ## Set the signals for the file menu
     #menu.add_open_signal do |path, kind|

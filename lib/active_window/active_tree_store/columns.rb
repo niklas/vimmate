@@ -1,6 +1,5 @@
 module ActiveWindow
-  class ActiveTreeStore
-    module Columns
+  module ActiveTreeStoreColumns
       def self.included(base)
         base.class_eval do
           class_inheritable_accessor :id
@@ -48,7 +47,6 @@ module ActiveWindow
         def column_classes
           columns.map(&:klass)
         end
-      end
     end
   end
 end

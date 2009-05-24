@@ -18,5 +18,6 @@ Config = VimMate::Config
 require_dependency 'gtk_thread_helper'
 require_dependency 'plugins'
 
+require_dependency 'active_window'
 require_dependency 'vim_mate_controller'
 require_dependency 'file_filter_controller'
