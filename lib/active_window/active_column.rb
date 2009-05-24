@@ -18,7 +18,8 @@ ActiveColumn is used to define columns for ActiveTreeStore
       Fixnum        => :integer,
       Bignum        => :integer,
       Integer       => :integer,
-      Float         => :float
+      Float         => :float,
+      Gdk::Pixbuf   => :image
     }
 
     ##
@@ -32,6 +33,7 @@ ActiveColumn is used to define columns for ActiveTreeStore
         when :integer;        ActiveIntegerColumn
         when :float;          ActiveFloatColumn
         when :boolean;        ActiveToggleColumn
+        when :image;          ActiveImageColumn
         else; self
       end
       return subclass.new(id, name.to_s, opts)
@@ -50,6 +52,7 @@ ActiveColumn is used to define columns for ActiveTreeStore
     
     ## return a Gtk::TreeViewColumn appropriate for showing this column
     def view
+      raise "There is no way to show #{name} yet."
     end
 
     ## return the class of the value held for this column in the model
@@ -138,6 +141,19 @@ ActiveColumn is used to define columns for ActiveTreeStore
       column.set_cell_data_func(renderer) do |col, renderer, model, iter|
         renderer.text = sprintf("%x %X", iter[self.id])
       end
+    end
+  end
+
+
+  class ActiveImageColumn < ActiveColumn
+    def data_class
+      Gdk::Pixbuf
+    end
+
+    def view
+      renderer = Gtk::CellRendererPixbuf.new
+      column = Gtk::TreeViewColumn.new(self.name, renderer, :pixbuf => self.id)
+      return column
     end
   end
 
