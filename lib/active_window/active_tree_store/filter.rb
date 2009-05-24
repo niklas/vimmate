@@ -8,8 +8,8 @@ module ActiveWindow
     include TreeStoreExtentions
 
     attr_reader :filter_string
-    define_callbacks :before_filter_applied
-    define_callbacks :after_filter_applied
+    define_callbacks :before_filter_applied, :after_filter_applied
+    define_callbacks :before_clear_filter, :after_clear_filter
 
     def initialize(model, &block)
       raise ArgumentError, "please give a block that takes |filter_string, model, path, iter|" unless block_given?
