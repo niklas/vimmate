@@ -45,7 +45,7 @@ module ActiveWindow
         end
 
         def column_classes
-          columns.map(&:klass)
+          columns.map(&:data_class)
         end
     end
   end

@@ -7,27 +7,39 @@ ActiveColumn is used to define columns for ActiveTreeStore
 =end
 
   class ActiveColumn 
-    attr_accessor :id, :name, :klass
+    attr_accessor :id, :name
+
+    ClassesToSymbols = {
+      TrueClass     => :boolean,
+      FalseClass    => :boolean,
+      String        => :string,
+      Time          => :datetime,
+      Date          => :datetime,
+      Fixnum        => :integer,
+      Bignum        => :integer,
+      Integer       => :integer,
+      Float         => :float
+    }
 
     ##
     ## column: ActiveRecord::ConnectionAdapters::MysqlColumn
     ##
-    def self.create(id, name, klass=String, opts={})
+    def self.create(id, name, klass=:string, opts={})
+      klass = ClassesToSymbols[klass] if klass.is_a?(Class)
       subclass = case klass # ignore warning this creates
-        when String:     ActiveTextColumn
-        when Time;       ActiveDateColumn
-        when Fixnum;     ActiveIntegerColumn
-        when Float;      ActiveFloatColumn
-        when TrueClass, FalseClass;   ActiveToggleColumn
+        when :string;         ActiveTextColumn
+        when :datetime;       ActiveDateColumn
+        when :integer;        ActiveIntegerColumn
+        when :float;          ActiveFloatColumn
+        when :boolean;        ActiveToggleColumn
         else; self
       end
-      return subclass.new(id, name.to_s, klass, opts)
+      return subclass.new(id, name.to_s, opts)
     end
     
-    def initialize(id, name, klass, opts={})
+    def initialize(id, name, opts={})
       self.id = id
       self.name = name
-      self.klass = klass
       @virtual = true if opts[:virtual] == true
       #puts 'new column: %s %s' % [self.class, name]
     end
@@ -42,7 +54,7 @@ ActiveColumn is used to define columns for ActiveTreeStore
 
     ## return the class of the value held for this column in the model
     def data_class
-      klass
+      Object
     end
     
     ## given an active record object, return the attribute

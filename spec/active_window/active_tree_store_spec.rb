@@ -52,7 +52,7 @@ describe ActiveWindow::ActiveTreeStore do
       PersonTree::AGE.should == 3
     end
     it "should provde classes for columns" do
-      PersonTree.column_classes.should == [TrueClass, Object, String, Fixnum]
+      PersonTree.column_classes.should == [TrueClass, Object, String, Integer]
     end
     it "should store column index in hash" do
       PersonTree.id.should == {:visible => 0, :object => 1, :name => 2, :age => 3}
@@ -119,8 +119,8 @@ describe ActiveWindow::ActiveTreeStore do
       LemonTree::LEMON_COUNT.should == 2
     end
     it "should provde classes for columns" do
-      AppleTree.column_classes.should == [TrueClass, Object, Fixnum]
-      LemonTree.column_classes.should == [TrueClass, Object, Fixnum]
+      AppleTree.column_classes.should == [TrueClass, Object, Integer]
+      LemonTree.column_classes.should == [TrueClass, Object, Integer]
     end
   end
 end
