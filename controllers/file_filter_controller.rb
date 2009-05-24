@@ -7,7 +7,7 @@ class FileFilterController < ActiveWindow::Controller
     # TODO use ActiveTreeStore derivate
     @file_tree = FileTreeStore.new
     @filtered_file_tree = create_filtered_model file_tree do |filter_string, model, path, iter|
-      !iter[FileTreeStore::NAME].index(filter_string).nil?
+      !iter[FileTreeStore::id[:name]].index(filter_string).nil?
     end
 
     filtered_file_tree.apply_to_tree file_tree_view
