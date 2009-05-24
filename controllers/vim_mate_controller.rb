@@ -30,4 +30,8 @@ class VimMateController < ActiveWindow::Controller
     #end
   end
 
+  def pressed_key
+    STDERR.puts "you pressed a key!"
+  end
+
 end

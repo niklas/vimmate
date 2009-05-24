@@ -3,7 +3,7 @@
   <!-- interface-requires gtk+ 2.16 -->
   <!-- interface-naming-policy project-wide -->
   <widget class="GtkWindow" id="VimMate">
-    <signal name="key_press_event" handler="on_key_pressed"/>
+    <signal name="key_press_event" handler="vim_mate.pressed_key"/>
     <child>
       <widget class="GtkHPaned" id="MainPane">
         <property name="visible">True</property>
