@@ -44,27 +44,27 @@ fork do
   class VimMateApp < ActiveWindow::Application
     def add_path(path)
       controller[:file_filter].file_tree.add_path(path)
-      controller[:file_filter].changed
+    end
+
+    def post_setup
+      super
+      # If there are no files given, add the current directory to the file list.
+      # If files are specified on the command line, use them
+      if ARGV.empty?
+        add_path(File.expand_path('.'))
+        #window.file_tree.expand_first_row
+      else
+        ARGV.each do |file|
+          path = File.expand_path(file)
+          add_path(path)
+          #window.vim.open(path, :tab)
+        end
+      end
     end
   end
 
   PROGRAM_NAME = 'vim_mate'
   app = VimMateApp.new(:title => 'VimMate', :main_window => 'VimMate')
-
-  app.setup
-  app.post_setup
-  # If there are no files given, add the current directory to the file list.
-  # If files are specified on the command line, use them
-  if ARGV.empty?
-    app.add_path(File.expand_path('.'))
-    #window.file_tree.expand_first_row
-  else
-    ARGV.each do |file|
-      path = File.expand_path(file)
-      app.add_path(path)
-      #window.vim.open(path, :tab)
-    end
-  end
   app.start
 
 
