@@ -5,7 +5,7 @@ class FileTreeStore < ActiveWindow::ActiveTreeStore
   column :status, String
 
   def add_path(path, parent=nil)
-    add :full_path => File.expand_path(path), :name => File.basename(path), :status => 'normal'
+    add ListedFile.create(:full_path => path)
   end
 
 end

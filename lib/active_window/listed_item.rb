@@ -2,24 +2,16 @@ module ActiveWindow
   # The ListItem is created on the fly
   #  * to oo-abstract methods to its TreeIter
   #  * for iteration in TreeController
+  #  * as object in ActiveTreeStore
   class ListedItem
     attr_reader :iter
     attr_reader :tree
-    include VimMate::Tree::Definitions::Column
-    column :sort, String
-    column :visible, FalseClass
-    column :name, String
-    column :referenced_type, String # not TYPE because we want to call #type later
+
 
     def initialize(opts = {})
       @traversed = false
       @iter = opts[:iter]
       @tree = opts[:tree]
-      self.reference = opts[:reference]
-      self.sort ||= opts[:sort] || "item-#{iter}"
-      #self.visible = true unless visible == false
-      self.name ||= opts[:name] || "item-#{iter}"
-      self.referenced_type ||= self.class.name
       self
     end
 
@@ -29,6 +21,10 @@ module ActiveWindow
 
     def icon_name
       nil
+    end
+
+    def icon
+      VimMate::Icons.by_name icon_name
     end
 
     # New by Gtk::TreeRowReference
