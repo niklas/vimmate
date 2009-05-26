@@ -41,6 +41,7 @@ module ActiveWindow
         update_iter_from_object iter, object
       end
       iter[ self.class.id[:object] ] = object
+      iter
     end
 
     # Updates the display in the tree/list of the given object

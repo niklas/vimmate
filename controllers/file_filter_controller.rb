@@ -2,8 +2,6 @@ class FileFilterController < ActiveWindow::Controller
   attr_reader :file_tree, :filtered_file_tree
 
   def post_setup
-    # TODO re-enable excludes
-    # TODO local excludes
     # TODO use ActiveTreeStore derivate
     @file_tree = FileTreeStore.new
     @filtered_file_tree = create_filtered_model file_tree do |filter_string, model, path, iter|

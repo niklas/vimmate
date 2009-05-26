@@ -42,12 +42,24 @@ fork do
   Thread.abort_on_exception = true
 
   class VimMateApp < ActiveWindow::Application
+    def initialize(opts={})
+      @excludes = opts.delete(:excludes)
+      super
+    end
+    def file_tree
+      controller[:file_filter].file_tree
+    end
     def add_path(path)
-      controller[:file_filter].file_tree.add_path(path)
+      file_tree.add_path(path)
     end
 
     def post_setup
       super
+
+      @excludes.each do |rule|
+        file_tree.exclude! rule
+      end unless @excludes.blank?
+
       # If there are no files given, add the current directory to the file list.
       # If files are specified on the command line, use them
       if ARGV.empty?
@@ -64,21 +76,12 @@ fork do
   end
 
   PROGRAM_NAME = 'vim_mate'
-  app = VimMateApp.new(:title => 'VimMate', :main_window => 'VimMate')
+  app = VimMateApp.new(:title => 'VimMate', :main_window => 'VimMate', :excludes => excludes)
   app.start
 
 
   ## Create the main objects
   #window = VimMate::Window.new
 
-  #excludes.each do |pattern|
-  #  window.file_tree.exclude! pattern
-  #end
-
-  #window.show
-
-
-
-  #window.start
 end
 

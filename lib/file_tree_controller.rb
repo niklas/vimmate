@@ -104,15 +104,6 @@
       end
     end
 
-    # Path ends with a node name contained in the exclude list
-    def excludes?(path)
-      @excludes.any?  {|f| path[-(f.size+1)..-1] == "/#{f}" }
-    end
-
-    def exclude!(new_exclude)
-      @excludes << new_exclude
-    end
-
 
     private
     # Filter tree view so only directories and separators with matching
