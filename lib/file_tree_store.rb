@@ -1,14 +1,14 @@
 class FileTreeStore < ActiveWindow::ActiveTreeStore
-  column :icon, Gdk::Pixbuf
+  #column :icon, Gdk::Pixbuf
   column :full_path, String, :virtual => true
-  column :name, String
+  #column :name, String
   virtual_column :status, String
   virtual_column :sort, String
 
-  #pack_column 'Files' do |pack|
-  #  page << virtual_column :icon, Gdk::Pixbuf
-  #  page << virtual_column :name, String
-  #end
+  composite_column 'Files' do |col|
+    col.add virtual_column(:icon, Gdk::Pixbuf)
+    col.add virtual_column(:name, String)
+  end
 
   attr_reader :excludes
   def initialize

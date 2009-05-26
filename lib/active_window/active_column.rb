@@ -8,6 +8,7 @@ ActiveColumn is used to define columns for ActiveTreeStore
 
   class ActiveColumn 
     attr_accessor :id, :name
+    extend ActiveSupport::Memoizable
 
     ClassesToSymbols = {
       TrueClass     => :boolean,
@@ -55,6 +56,10 @@ ActiveColumn is used to define columns for ActiveTreeStore
       raise "There is no way to show #{name} yet."
     end
 
+    def renderer
+      raise "There is no way to render #{name} yet."
+    end
+
     ## return the class of the value held for this column in the model
     def data_class
       Object
@@ -67,6 +72,18 @@ ActiveColumn is used to define columns for ActiveTreeStore
     def data_value(ar_object)
       ar_object.send(self.name)
     end
+
+    def view
+      r = renderer
+      column.pack_start(r, true)
+      column.add_attribute(r, attribute, self.id)
+      column
+    end
+
+    private
+    def column
+      @gtk_column ||= Gtk::TreeViewColumn.new(self.name)
+    end
   end
 
   ##
@@ -78,11 +95,11 @@ ActiveColumn is used to define columns for ActiveTreeStore
     def data_class
       String
     end    
-    def view
-      renderer = Gtk::CellRendererText.new
-      column = Gtk::TreeViewColumn.new(self.name, renderer, :text => self.id)
-      column.set_sort_column_id(self.id)
-      return column
+    def renderer
+      Gtk::CellRendererText.new
+    end
+    def attribute
+      :text
     end
   end
 
@@ -102,10 +119,11 @@ ActiveColumn is used to define columns for ActiveTreeStore
     def data_class
       TrueClass
     end
-    def view
-      renderer = Gtk::CellRendererToggle.new
-      column = Gtk::TreeViewColumn.new(self.name, renderer, :active => self.id)
-      return column
+    def renderer
+      Gtk::CellRendererToggle.new
+    end
+    def attribute
+      :active
     end
   end
   
@@ -116,10 +134,14 @@ ActiveColumn is used to define columns for ActiveTreeStore
     def data_class
       Float
     end
+    def renderer
+      Gtk::CellRendererText.new
+    end
+    def attribute
+      :text
+    end
     def view
-      renderer = Gtk::CellRendererText.new
-      column = Gtk::TreeViewColumn.new(self.name, renderer)
-      column.set_cell_data_func(renderer) do |col, renderer, model, iter|
+      super.set_cell_data_func(renderer) do |col, renderer, model, iter|
         renderer.text = sprintf("%.2f", iter[self.id])
       end
     end
@@ -135,10 +157,14 @@ ActiveColumn is used to define columns for ActiveTreeStore
     def data_class
       Time
     end
+    def renderer
+      Gtk::CellRendererText.new
+    end
+    def attribute
+      :text
+    end
     def view
-      renderer = Gtk::CellRendererText.new
-      column = Gtk::TreeViewColumn.new(self.name, renderer)
-      column.set_cell_data_func(renderer) do |col, renderer, model, iter|
+      super.set_cell_data_func(renderer) do |col, renderer, model, iter|
         renderer.text = sprintf("%x %X", iter[self.id])
       end
     end
@@ -150,19 +176,28 @@ ActiveColumn is used to define columns for ActiveTreeStore
       Gdk::Pixbuf
     end
 
-    def view
-      renderer = Gtk::CellRendererPixbuf.new
-      column = Gtk::TreeViewColumn.new(self.name, renderer, :pixbuf => self.id)
-      return column
+    def renderer
+      Gtk::CellRendererPixbuf.new
+    end
+
+    def attribute
+      :pixbuf
     end
   end
 
-  # with pack multiple columns into one, needs
-  # * pack instructions (+expand+)
-  # * separate render for all Column Subclasses
+  # pack multiple columns into one
   class ActiveCompositeColumn < ActiveColumn
+    def initialize(name, opts={})
+      self.name = name
+      @virtual = false
+    end
     def view
-      column = Gtk::TreeViewColumn.new(self.name)
+      column
+    end
+    def add(child, expand=true)
+      rend = child.renderer
+      column.pack_start(rend, expand)
+      column.add_attribute(rend, child.attribute, child.id)
     end
   end
 

@@ -27,25 +27,29 @@ module ActiveWindow
           return if id.has_key?(label.to_sym) # do not double-define
           index = column_count
           id[label.to_sym] = index
-          columns << ActiveColumn.create(index, label, type, opts)
+          col = ActiveColumn.create(index, label, type, opts)
+          columns << col
           const_set label.to_s.upcase, index
           class_eval <<-EOCODE
             def self.#{label}_column
               #{index}
             end
           EOCODE
+          return col
         end
 
-        def pack_column(label)
-          raise "not implemented yet"
-          cols = []
-          yield cols
+        def composite_column(label)
+          col = ActiveCompositeColumn.new(label)
+          yield col
+          columns << col
+          return col
         end
 
         def virtual_column(label, type)
           column label, type, :virtual => true
         end
 
+        # visible vs. virtual
         def used_columns
           columns.reject(&:virtual?)
         end
