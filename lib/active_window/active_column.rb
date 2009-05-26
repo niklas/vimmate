@@ -157,6 +157,15 @@ ActiveColumn is used to define columns for ActiveTreeStore
     end
   end
 
+  # with pack multiple columns into one, needs
+  # * pack instructions (+expand+)
+  # * separate render for all Column Subclasses
+  class ActiveCompositeColumn < ActiveColumn
+    def view
+      column = Gtk::TreeViewColumn.new(self.name)
+    end
+  end
+
     
 end
 

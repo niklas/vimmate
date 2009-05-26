@@ -36,6 +36,12 @@ module ActiveWindow
           EOCODE
         end
 
+        def pack_column(label)
+          raise "not implemented yet"
+          cols = []
+          yield cols
+        end
+
         def virtual_column(label, type)
           column label, type, :virtual => true
         end
