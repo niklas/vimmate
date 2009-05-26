@@ -63,32 +63,5 @@
       super
     end
 
-    def self.setup_view_column(column)
-      column.title = "Files"
-
-      # Icon
-      icon_cell_renderer = Gtk::CellRendererPixbuf.new
-      column.pack_start(icon_cell_renderer, false)
-      column.set_attributes(icon_cell_renderer, :pixbuf => ICON)
-
-      # File name
-      text_cell_renderer = Gtk::CellRendererText.new
-      if VimMate::Config[:files_use_ellipsis]
-        text_cell_renderer.ellipsize = Pango::Layout::EllipsizeMode::MIDDLE
-      end
-      column.pack_start(text_cell_renderer, true)
-      column.set_attributes(text_cell_renderer, :text => NAME)
-      
-      # Status
-      if VimMate::Config[:files_show_status]
-        text_cell_renderer2 = Gtk::CellRendererText.new
-        if VimMate::Config[:files_use_ellipsis]
-          text_cell_renderer2.ellipsize = Pango::Layout::EllipsizeMode::END
-        end
-        column.pack_start(text_cell_renderer2, true)
-        column.set_attributes(text_cell_renderer2, :text => STATUS)
-      end
-      column
-    end
   end
 

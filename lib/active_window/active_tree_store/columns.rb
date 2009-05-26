@@ -19,6 +19,7 @@ module ActiveWindow
         def used_columns
           self.class.used_columns
         end
+
       end
 
       module ClassMethods
@@ -33,6 +34,10 @@ module ActiveWindow
               #{index}
             end
           EOCODE
+        end
+
+        def virtual_column(label, type)
+          column label, type, :virtual => true
         end
 
         def used_columns
