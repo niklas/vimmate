@@ -15,7 +15,7 @@ module ActiveWindow
       self
     end
 
-    def sort_string
+    def sort
       "item-#{iter}"
     end
 

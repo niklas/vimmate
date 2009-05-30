@@ -1,9 +1,7 @@
 class FileTreeStore < ActiveWindow::ActiveTreeStore
-  #column :icon, Gdk::Pixbuf
   column :full_path, String, :visible => false
-  #column :name, String
-  virtual_column :status, String, :visible => false
-  virtual_column :sort, String, :visible => false
+  column :status, String, :visible => false
+  column :sort, String, :visible => false
 
   composite_column 'Files' do |col|
     col.add column(:icon, Gdk::Pixbuf), false
@@ -14,6 +12,7 @@ class FileTreeStore < ActiveWindow::ActiveTreeStore
   def initialize
     super
     @excludes ||= []
+    set_sort_column_id self.class.column_id[:sort]
   end
 
   def add_path(path, parent=nil)

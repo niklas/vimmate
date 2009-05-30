@@ -1,5 +1,5 @@
   class ListedDirectory < ListedFile
-    def sort_string
+    def sort
       "1-#{name}-1"
     end
     def icon_name

@@ -39,7 +39,7 @@
         self.name  = File.basename new_full_path
       end
     end
-    def sort_string
+    def sort
       "2-#{name}-1"
     end
     def file?
