@@ -58,6 +58,57 @@ describe ActiveWindow::ActiveTreeStore do
       PersonTree.column_id.should == {:visible => 0, :object => 1, :name => 2, :age => 3}
     end
 
+    describe "with index on name" do
+      before( :each ) do
+        PersonTree.index_by :name
+      end
+
+      it "should define a method to remember People by name" do
+        ActiveWindow::Signal::signals[:item_added].should_not be_empty
+      end
+
+      it "should define a method to find People by name" do
+        PersonTree.public_instance_methods.should include('find_by_name')
+      end
+
+      describe "added Peter, Paul and Mary" do
+        before( :each ) do
+          @person_tree = PersonTree.new
+          @person_tree.add :name => 'Peter', :age => 23
+          @person_tree.add :name => 'Paul', :age => 42
+          @person_tree.add :name => 'Mary', :age => 19
+        end
+
+        it "should have indexed the items" do
+          @person_tree.index_by_name.should be_a(Hash)
+          @person_tree.index_by_name.should have_key('Peter')
+          @person_tree.index_by_name.should have_key('Paul')
+          @person_tree.index_by_name.should have_key('Mary')
+        end
+
+        it "should index by Strings (the names)" do
+          @person_tree.index_by_name.keys.each do |key|
+            key.should be_a(String)
+          end
+        end
+
+        it "should index TreeRowReferences" do
+          @person_tree.index_by_name.values.each do |value|
+            value.should be_a(Gtk::TreeRowReference)
+          end
+        end
+
+        it "should find the row for Peter by its name" do
+          peter = nil
+          lambda { peter = @person_tree.find_by_name('Peter') }.should_not raise_error
+          peter.should_not be_nil
+          peter.should be_a(Gtk::TreeIter)
+          peter[2].should == 'Peter'
+        end
+        
+      end
+    end
+
 
     describe "instancing" do
       before( :each ) do

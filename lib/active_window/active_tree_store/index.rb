@@ -15,14 +15,19 @@ module ActiveWindow
         by = %Q~by_#{column}~
         class_eval <<-EOCODE
           def find_#{by}(val)
-            @index_#{by}[val] || raise "cannot find by #{column}: '#{val}'"
+            if ref = index_#{by}[val]
+              self.get_iter(ref.path)
+            else
+              raise("cannot find by #{column}: '\#{val}'")
+            end
           end
-          def remember_iter_#{by}(iter)
-            val = iter[ self.class.id[:#{column}] ]
-            @index_#{by}[val] = iter.reference
+          def index_#{by}
+            @index_#{by} ||= {}
           end
-          after_added :remember_iter_#{by}
-        end
+          Signal.on_item_added do |store, iter| # :remember_iter_#{by}
+            val = iter[ store.column_id[:#{column}] ]
+            store.index_#{by}[val] = Gtk::TreeRowReference.new(store, iter.path)
+          end
         EOCODE
       end
     end

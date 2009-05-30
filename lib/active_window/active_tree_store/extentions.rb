@@ -5,6 +5,7 @@ module ActiveWindow
       base.class_eval do
         include ActiveSupport::Callbacks
         include ActiveTreeStoreColumns
+        include ActiveTreeStoreIndex
       end
     end
     ## associates a Gtk::TreeView widget with self (a tree model). 
@@ -42,6 +43,7 @@ module ActiveWindow
         update_iter_from_object iter, object
       end
       iter[ self.class.column_id[:object] ] = object
+      Signal.emit_item_added(self, iter)
       iter
     end
 
