@@ -47,7 +47,10 @@ fork do
       super
     end
     def file_tree
-      controller[:file_filter].file_tree
+      files.file_tree
+    end
+    def files
+      controller[:file_filter]
     end
     def add_path(path)
       file_tree.add_path(path)
@@ -64,7 +67,7 @@ fork do
       # If files are specified on the command line, use them
       if ARGV.empty?
         add_path(File.expand_path('.'))
-        #window.file_tree.expand_first_row
+        files.expand_first_row
       else
         ARGV.each do |file|
           path = File.expand_path(file)
