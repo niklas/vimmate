@@ -43,7 +43,6 @@ module ActiveWindow
         update_iter_from_object iter, object
       end
       iter[ self.class.column_id[:object] ] = object
-      Signal.emit_item_added(self, iter)
       iter
     end
 

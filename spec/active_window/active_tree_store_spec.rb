@@ -34,6 +34,10 @@ describe ActiveWindow::ActiveTreeStore do
       end
     end
 
+    after( :each ) do
+      Object::send :remove_const, :PersonTree
+    end
+
     it "should still have basic columns" do
       PersonTree.column_id.should have_key(:visible)
       PersonTree.column_id.should have_key(:object)
@@ -64,7 +68,7 @@ describe ActiveWindow::ActiveTreeStore do
       end
 
       it "should define a method to remember People by name" do
-        ActiveWindow::Signal::signals[:item_added].should_not be_empty
+        PersonTree.public_instance_methods.should include('remember_iter_by_name')
       end
 
       it "should define a method to find People by name" do

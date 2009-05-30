@@ -23,7 +23,7 @@ require_dependency 'active_window'
 %w(
   file_created file_modified file_deleted file_opened
   dir_created
-  item_opened item_added item_removed item_refreshed
+  item_opened item_removed item_refreshed
   file_opened
 ).each do |signal|
   ActiveWindow::Signal::define signal

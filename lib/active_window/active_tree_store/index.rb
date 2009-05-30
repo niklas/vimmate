@@ -13,6 +13,7 @@ module ActiveWindow
     module ClassMethods
       def index_by(column)
         by = %Q~by_#{column}~
+        raise "cannot index by #{column}, it is already applied" if public_instance_methods.include?("find_#{by}")
         class_eval <<-EOCODE
           def find_#{by}(val)
             if ref = index_#{by}[val]
@@ -21,13 +22,19 @@ module ActiveWindow
               raise("cannot find by #{column}: '\#{val}'")
             end
           end
+          def remember_iter_#{by}(iter)
+            val = iter[ self.class.column_id[:#{column}] ]
+            index_#{by}[val] = Gtk::TreeRowReference.new(self, iter.path)
+          end
           def index_#{by}
             @index_#{by} ||= {}
           end
-          Signal.on_item_added do |store, iter| # :remember_iter_#{by}
-            val = iter[ store.column_id[:#{column}] ]
-            store.index_#{by}[val] = Gtk::TreeRowReference.new(store, iter.path)
+          def add_with_index_#{by}(*args)
+            iter = add_without_index_#{by}(*args)
+            remember_iter_#{by}(iter)
+            iter
           end
+          alias_method_chain :add, :index_#{by}
         EOCODE
       end
     end
