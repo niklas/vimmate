@@ -12,27 +12,6 @@ module ActiveWindow
       initialize_columns
       run_callbacks :after_initialize
     end
-    def save_expands
-      @expands = []
-      view.map_expanded_rows { |tree_view, path| @expands << path }
-      @expands
-    end
-
-    def restore_expands
-      view.collapse_all if Config[:files_auto_expand_on_filter]
-      unless @expands.nil? || @expands.empty?
-        @expands.each do |path|
-          view.expand_row(path, false)
-        end
-      end
-    end
-
-    def each
-      store.each do |model,path,iter|
-        yield item_for(iter)
-      end
-    end
-
     def selected_row
       if iter = view.selection.selected
         item_for iter

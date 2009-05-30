@@ -7,9 +7,6 @@ class FileFilterController < ActiveWindow::Controller
     @filtered_file_tree = FilteredFileTreeStore.new(file_tree)
 
     filtered_file_tree.apply_to_tree file_tree_view
-    #file_tree.apply_to_tree file_tree_view
-    # TODO expand behavior
-    #filtered_file_tree.before_filter_applied :save_expands_if_begin_filtering
 
     tree_scroller.set_size_request(Config[:files_opened_width], -1)
     files_filter_button.active = Config[:files_filter_active]
@@ -27,15 +24,43 @@ class FileFilterController < ActiveWindow::Controller
   end
   def changed
     if files_filter_button.active?
-      filtered_file_tree.filter = files_filter_term.text
+      filter_string = files_filter_term.text
+
+      if filtered_file_tree.filter_string.blank? && filter_string.length == 1 # begin of filtering
+        save_expands if Config[:files_auto_expand_on_filter]
+      end
+
+      filtered_file_tree.filter = filter_string
+
+      if Config[:files_auto_expand_on_filter]
+        filter_string.blank? ? restore_expands : expand_all
+      end
     else
       filtered_file_tree.clear_filter
+      restore_expands if Config[:files_auto_expand_on_filter]
     end
   end
   alias_method :toggle, :changed
 
-  def save_expands_if_begin_filtering
-    STDERR.puts "save_expands_if_begin_filtering"
-    file_tree_view.save_expands if filtered_file_tree.filter_string.blank? #  and new_filter_string.length == 1
-  end
+  private
+    def save_expands
+      @expands = []
+      file_tree_view.map_expanded_rows { |tree_view, path| @expands << path }
+      @expands
+    end
+
+    def restore_expands
+      file_tree_view.collapse_all if Config[:files_auto_expand_on_filter]
+      unless @expands.nil? || @expands.empty?
+        @expands.each do |path|
+          file_tree_view.expand_row(path, false)
+        end
+      end
+    end
+
+    def expand_all
+      file_tree_view.expand_all
+    end
+
+
 end
