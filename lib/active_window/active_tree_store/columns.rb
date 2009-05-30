@@ -16,15 +16,23 @@ module ActiveWindow
           self.class.columns
         end
 
-        def used_columns
-          self.class.used_columns
+        def data_columns
+          self.class.data_columns
+        end
+
+        def visible_columns
+          self.class.visible_columns
         end
 
       end
 
       module ClassMethods
+        # options:
+        #   :virtual:  (bool )does not take actual values
+        #   :visible:  (bool) should be shown in the view
         def column(label,type, opts={})
-          return if id.has_key?(label.to_sym) # do not double-define
+          return columns[id[label.to_sym]] if id.has_key?(label.to_sym) # do not double-define
+          opts.reverse_merge!(:visible => true, :virtual => false)
           index = column_count
           id[label.to_sym] = index
           col = ActiveColumn.create(index, label, type, opts)
@@ -45,15 +53,22 @@ module ActiveWindow
           return col
         end
 
-        def virtual_column(label, type)
-          column label, type, :virtual => true
+        def virtual_column(label, type, opts={})
+          column label, type, opts.merge(:virtual => true)
         end
 
         # visible vs. virtual
-        def used_columns
+        def data_columns
           columns.reject(&:virtual?)
         end
 
+        def visible_columns
+          columns.select(&:visible?)
+        end
+
+        def invisible_columns
+          columns.reject(&:visible?)
+        end
 
         def column_count
           columns.size

@@ -90,6 +90,12 @@ describe ActiveWindow::ActiveTreeStore do
       end
     end
 
+    after( :each ) do
+      Object::send :remove_const, :AppleTree
+      Object::send :remove_const, :LemonTree
+    end
+
+
     it "should both still have basic columns" do
       AppleTree.id[:visible].should == 0
       AppleTree.id[:object].should == 1
@@ -122,6 +128,57 @@ describe ActiveWindow::ActiveTreeStore do
       AppleTree.column_classes.should == [TrueClass, Object, Integer]
       LemonTree.column_classes.should == [TrueClass, Object, Integer]
     end
+  end
+
+  describe "Adding a column to a subclass" do
+    before( :each ) do
+      @sc = Class.new(@ats)
+    end
+
+    it "should return it to use it somewhere else" do
+      col = @sc.column(:name, :string)
+      col.should_not be_nil
+      col.should be_a(ActiveWindow::ActiveColumn)
+    end
+  end
+  
+  describe "subclassing with a composite column with 2 subcolumns" do
+    before( :each ) do
+      class ComplexTree < @ats
+        composite_column "Name and Age" do |pack|
+          pack.add column(:name, :string)
+          pack.add column(:age,  :integer)
+        end
+      end
+    end
+
+    after( :each ) do
+      Object::send :remove_const, :ComplexTree
+    end
+
+    it "should create 3 columns" do
+      ComplexTree.should have_at_least(3).columns
+    end
+
+    it "should have 2 invisible columns" do
+      ComplexTree.should have_at_least(2).invisible_columns
+    end
+
+    it "should have max 1 visible column (the composite one)" do
+      names = ComplexTree.visible_columns.map(&:name)
+      names.should == ['Name and Age']
+      ComplexTree.should have_at_most(1).visible_columns
+      names.should include('Name and Age')
+    end
+
+    it "should have 2 data columns (the subs)" do
+      ComplexTree.should have_at_least(2).data_columns
+      names = ComplexTree.data_columns.map(&:name)
+      names.should include('name')
+      names.should include('age')
+    end
+      
+    
   end
 end
 

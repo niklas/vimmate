@@ -8,7 +8,8 @@ class FileFilterController < ActiveWindow::Controller
       !iter[FileTreeStore::id[:name]].index(filter_string).nil?
     end
 
-    filtered_file_tree.apply_to_tree file_tree_view
+    #filtered_file_tree.apply_to_tree file_tree_view
+    file_tree.apply_to_tree file_tree_view
     # TODO expand behavior
     #filtered_file_tree.before_filter_applied :save_expands_if_begin_filtering
 

@@ -1,10 +1,8 @@
 module ActiveWindow
   class ActiveTreeStore < Gtk::TreeStore
-    include ActiveSupport::Callbacks
-    include ActiveTreeStoreColumns
     include TreeStoreExtentions
-    column :visible, TrueClass, :virtual => true
-    column :object, Object, :virtual => true
+    virtual_column :visible, TrueClass, :visible => false
+    virtual_column :object, Object, :visible => false
     define_callbacks :after_add
 
     def initialize(opts={})

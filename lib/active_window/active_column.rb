@@ -43,12 +43,21 @@ ActiveColumn is used to define columns for ActiveTreeStore
     def initialize(id, name, opts={})
       self.id = id
       self.name = name
-      @virtual = true if opts[:virtual] == true
+      @virtual = opts[:virtual] == true ? true : false
+      @visible = opts[:visible] == false ? false : true
       #puts 'new column: %s %s' % [self.class, name]
     end
 
     def virtual?
       @virtual
+    end
+
+    def hide!
+      @visible = false
+    end
+
+    def visible?
+      @visible
     end
     
     ## return a Gtk::TreeViewColumn appropriate for showing this column
@@ -189,15 +198,18 @@ ActiveColumn is used to define columns for ActiveTreeStore
   class ActiveCompositeColumn < ActiveColumn
     def initialize(name, opts={})
       self.name = name
-      @virtual = false
+      @virtual = true
+      @visible = true
     end
     def view
       column
     end
-    def add(child, expand=true)
-      rend = child.renderer
+    def add(child_column, expand=true)
+      raise ArgumentError, "give an ActiveColumn, not #{child_column.inspect}" unless child_column.is_a?(ActiveColumn)
+      child_column.hide!
+      rend = child_column.renderer
       column.pack_start(rend, expand)
-      column.add_attribute(rend, child.attribute, child.id)
+      column.add_attribute(rend, child_column.attribute, child_column.id)
     end
   end
 

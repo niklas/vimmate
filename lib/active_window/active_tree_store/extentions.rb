@@ -4,13 +4,15 @@ module ActiveWindow
     def self.included(base)
       base.class_eval do
         include ActiveSupport::Callbacks
+        include ActiveTreeStoreColumns
       end
     end
     ## associates a Gtk::TreeView widget with self (a tree model). 
     def apply_to_tree(treeview, opts={})
       raise ArgumentError, "please provide a Gtk::TreeView" unless treeview.is_a?(Gtk::TreeView)
       treeview.model = self
-      cols = used_columns
+      cols = self.class.visible_columns
+      STDERR.puts "appending columns #{cols.inspect}"
       cols = cols.except(opts[:except]) if opts.has_key?(:except)
       cols = cols.slice(opts[:only]) if opts.has_key?(:only)
       cols.map(&:view).each do |column|
@@ -48,7 +50,7 @@ module ActiveWindow
     def refresh(object)
       each do |model,path,iter| 
         if iter[OBJECT] == object
-          used_columns.each do |column|
+          data_columns.each do |column|
             set_value(iter, column.id, column.data_value(object))
           end
           break
@@ -58,7 +60,7 @@ module ActiveWindow
 
     private
     def update_iter_from_object(iter, object)
-      used_columns.each do |column|
+      data_columns.each do |column|
         iter[column.id] = column.data_value(object)
       end
     end
