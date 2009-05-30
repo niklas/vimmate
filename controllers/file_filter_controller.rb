@@ -8,6 +8,10 @@ class FileFilterController < ActiveWindow::Controller
 
     filtered_file_tree.apply_to_tree file_tree_view
 
+    file_tree_view.selection.mode = Gtk::SELECTION_SINGLE
+    file_tree_view.headers_visible = VimMate::Config[:file_headers_visible]
+    file_tree_view.hover_selection = VimMate::Config[:file_hover_selection]
+
     tree_scroller.set_size_request(Config[:files_opened_width], -1)
     files_filter_button.active = Config[:files_filter_active]
     files_pane.position = Config[:files_search_separator_position]
