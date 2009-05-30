@@ -15,11 +15,12 @@ module ActiveWindow
         by = %Q~by_#{column}~
         raise "cannot index by #{column}, it is already applied" if public_instance_methods.include?("find_#{by}")
         class_eval <<-EOCODE
+          def find_#{by}!(val)
+            find_#{by}(val) || raise("cannot find by #{column}: '\#{val}'")
+          end
           def find_#{by}(val)
             if ref = index_#{by}[val]
               self.get_iter(ref.path)
-            else
-              raise("cannot find by #{column}: '\#{val}'")
             end
           end
           def remember_iter_#{by}(iter)
