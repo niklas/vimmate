@@ -38,10 +38,5 @@ module VimMate
       end
     end
     
-    define :file_created
-    define :file_modified
-    define :file_deleted
-    define :file_opened
-
   end
 end
