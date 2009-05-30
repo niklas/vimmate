@@ -79,7 +79,7 @@ module VimMate
       end
       remote_send "<ESC><ESC><ESC>:buffer #{path}<CR>"
       focus_vim
-      Signal.emit_file_opened(path)
+      #Signal.emit_file_opened(path)
       self
     end
 

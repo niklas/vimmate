@@ -82,11 +82,6 @@
       end
     end
 
-    def expand_first_row
-      view.collapse_all
-      view.expand_row(Gtk::TreePath.new("0"), false)
-    end
-
     def has_path? file_path
       !file_path.nil? && references.has_key?(file_path) && references[file_path]
     end
@@ -125,38 +120,6 @@
     after_filter_applied :expand_all_if_wanted
     def expand_all_if_wanted
       view.expand_all if filtering? and Config[:files_auto_expand_on_filter]
-    end
-
-
-    def create_or_find_item_by_path(full_file_path)
-      if has_path?(full_file_path)
-        item_for(full_file_path)
-      else
-        add_file_or_directory(full_file_path)
-      end
-    end
-
-    # TODO new added files do not get filtered
-    # TODO expand the rows on filtering
-    def add_file_or_directory(full_file_path)
-      return if excludes?(full_file_path)
-      if File.exists? full_file_path
-        parent_path = File.dirname(full_file_path)
-        create_item :full_path => full_file_path, :parent => has_path?(parent_path) ? parent_path : nil
-      end
-    end
-
-    def build_item(attrs)
-      item = super
-      references[item.full_path] ||= item.reference if item.file_or_directory?
-      item
-    end
-
-    def create_message(message)
-      $stderr.puts "Not implemented: create_message '#{message}'"
-      #@message_row = store.append(nil)
-      #  @message_row[REFERENCED_TYPE] = TYPE_MESSAGE
-      #  @message_row[NAME] = "nothing found"
     end
 
     private

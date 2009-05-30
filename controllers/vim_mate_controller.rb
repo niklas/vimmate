@@ -15,8 +15,6 @@ class VimMateController < ActiveWindow::Controller
     #file_tree.on_popup_menu &method(:open_file_popup)
 
 
-    @vim = VimMate::VimWidget.new
-    main_pane.pack2(vim.window, true, false)
 
     #@tags_tree = VimMate::TagsWindow.new(@vim)
     #tags_scroller.add @tags_tree.gtk_window

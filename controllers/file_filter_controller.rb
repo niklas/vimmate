@@ -46,6 +46,7 @@ class FileFilterController < ActiveWindow::Controller
   end
   alias_method :toggle, :changed
 
+
   private
     def save_expands
       @expands = []
@@ -64,6 +65,11 @@ class FileFilterController < ActiveWindow::Controller
 
     def expand_all
       file_tree_view.expand_all
+    end
+
+    def expand_first_row
+      file_tree_view.collapse_all
+      file_tree_view.expand_row(Gtk::TreePath.new("0"), false)
     end
 
 
