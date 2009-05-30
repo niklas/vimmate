@@ -4,12 +4,10 @@ class FileFilterController < ActiveWindow::Controller
   def post_setup
     # TODO use ActiveTreeStore derivate
     @file_tree = FileTreeStore.new
-    @filtered_file_tree = create_filtered_model file_tree do |filter_string, model, path, iter|
-      !iter[FileTreeStore::id[:name]].index(filter_string).nil?
-    end
+    @filtered_file_tree = FilteredFileTreeStore.new(file_tree)
 
-    #filtered_file_tree.apply_to_tree file_tree_view
-    file_tree.apply_to_tree file_tree_view
+    filtered_file_tree.apply_to_tree file_tree_view
+    #file_tree.apply_to_tree file_tree_view
     # TODO expand behavior
     #filtered_file_tree.before_filter_applied :save_expands_if_begin_filtering
 

@@ -2,8 +2,8 @@ module ActiveWindow
   module ActiveTreeStoreColumns
       def self.included(base)
         base.class_eval do
-          class_inheritable_accessor :id
-          write_inheritable_attribute :id, {}
+          class_inheritable_accessor :column_id
+          write_inheritable_attribute :column_id, {}
           class_inheritable_accessor :columns
           write_inheritable_attribute :columns, []
           include InstanceMethods
@@ -31,10 +31,10 @@ module ActiveWindow
         #   :virtual:  (bool )does not take actual values
         #   :visible:  (bool) should be shown in the view
         def column(label,type, opts={})
-          return columns[id[label.to_sym]] if id.has_key?(label.to_sym) # do not double-define
+          return columns[column_id[label.to_sym]] if column_id.has_key?(label.to_sym) # do not double-define
           opts.reverse_merge!(:visible => true, :virtual => false)
           index = column_count
-          id[label.to_sym] = index
+          column_id[label.to_sym] = index
           col = ActiveColumn.create(index, label, type, opts)
           columns << col
           const_set label.to_s.upcase, index

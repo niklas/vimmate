@@ -8,13 +8,13 @@ describe ActiveWindow::ActiveTreeStore do
     @ats.should < Gtk::TreeStore
   end
   it "should store columns" do
-    @ats.id.should_not be_nil
-    @ats.id.should be_a(Hash)
+    @ats.column_id.should_not be_nil
+    @ats.column_id.should be_a(Hash)
   end
 
   it "should have basic columns" do
-    @ats.id.should have_key(:visible)
-    @ats.id.should have_key(:object)
+    @ats.column_id.should have_key(:visible)
+    @ats.column_id.should have_key(:object)
   end
 
   it "should store column index in constants" do
@@ -35,12 +35,12 @@ describe ActiveWindow::ActiveTreeStore do
     end
 
     it "should still have basic columns" do
-      PersonTree.id.should have_key(:visible)
-      PersonTree.id.should have_key(:object)
+      PersonTree.column_id.should have_key(:visible)
+      PersonTree.column_id.should have_key(:object)
     end
     it "should have both new columns defined" do
-      PersonTree.id.should have_key(:name)
-      PersonTree.id.should have_key(:age)
+      PersonTree.column_id.should have_key(:name)
+      PersonTree.column_id.should have_key(:age)
     end
     it "should have 4 columns" do
       PersonTree.column_count.should == 4
@@ -55,7 +55,7 @@ describe ActiveWindow::ActiveTreeStore do
       PersonTree.column_classes.should == [TrueClass, Object, String, Integer]
     end
     it "should store column index in hash" do
-      PersonTree.id.should == {:visible => 0, :object => 1, :name => 2, :age => 3}
+      PersonTree.column_id.should == {:visible => 0, :object => 1, :name => 2, :age => 3}
     end
 
 
@@ -97,18 +97,18 @@ describe ActiveWindow::ActiveTreeStore do
 
 
     it "should both still have basic columns" do
-      AppleTree.id[:visible].should == 0
-      AppleTree.id[:object].should == 1
-      LemonTree.id[:visible].should == 0
-      LemonTree.id[:object].should == 1
+      AppleTree.column_id[:visible].should == 0
+      AppleTree.column_id[:object].should == 1
+      LemonTree.column_id[:visible].should == 0
+      LemonTree.column_id[:object].should == 1
     end
     it "should define columns for both subclasses" do
-      AppleTree.id[:apple_count].should == 2
-      LemonTree.id[:lemon_count].should == 2
+      AppleTree.column_id[:apple_count].should == 2
+      LemonTree.column_id[:lemon_count].should == 2
     end
     it "should keep the new columns to their Classes" do
-      AppleTree.id.should_not have_key(:lemon_count)
-      LemonTree.id.should_not have_key(:apple_count)
+      AppleTree.column_id.should_not have_key(:lemon_count)
+      LemonTree.column_id.should_not have_key(:apple_count)
     end
     it "should both have 3 columns" do
       AppleTree.column_count.should == 3
@@ -177,7 +177,66 @@ describe ActiveWindow::ActiveTreeStore do
       names.should include('name')
       names.should include('age')
     end
+
+    describe "creating a class filtering it" do
+      before( :each ) do
+        class FilteredComplexTree < ActiveWindow::FilteredActiveTreeStore
+          def iter_visible?(iter)
+            !( iter[ self.class.column_id[:name] ].index(filter_string) ).nil?
+          end
+        end
+      end
+      after( :each ) do
+        Object::send :remove_const, :FilteredComplexTree
+      end
+
+      it "should take its columns from ComplexTree" do
+        FilteredComplexTree.columns.should == ComplexTree.columns
+      end
+
+      describe "instancing it with a model" do
+        before( :each ) do
+          @tree = ComplexTree.new
+          @filtered_tree = FilteredComplexTree.new @tree
+        end
+
+        describe "and filtering some data" do
+          before( :each ) do
+            @tree.add(:name => 'Niklas', :age => 27)
+            @tree.add(:name => 'Grandpa', :age => 99)
+            @filtering = lambda { @filtered_tree.filter = 'something' }
+            @vis_col = 0
+          end
+          it "should not break on filtering" do
+            @filtering.should_not raise_error
+          end
+
+          it "should check iter for visibility" do
+            @filtered_tree.should_receive(:iter_visible?).at_least(:twice)
+            @filtering.call
+          end
+
+          it "should hide rows that do not match" do
+            @filtered_tree.stub(:iter_visible?).and_return(false)
+            @filtering.call
+            @tree.each do |model, path, iter|
+              iter[@vis_col].should be_false
+            end
+          end
+
+          it "should show rows that do match" do
+            @filtered_tree.stub(:iter_visible?).and_return(true)
+            @filtering.call
+            @filtered_tree.found_count.should >= 2
+            @tree.each do |model, path, iter|
+              iter[@vis_col].should be_true
+            end
+          end
+        end
+        
+      end
       
+    end
     
   end
 end

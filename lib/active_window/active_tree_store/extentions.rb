@@ -12,7 +12,6 @@ module ActiveWindow
       raise ArgumentError, "please provide a Gtk::TreeView" unless treeview.is_a?(Gtk::TreeView)
       treeview.model = self
       cols = self.class.visible_columns
-      STDERR.puts "appending columns #{cols.inspect}"
       cols = cols.except(opts[:except]) if opts.has_key?(:except)
       cols = cols.slice(opts[:only]) if opts.has_key?(:only)
       cols.map(&:view).each do |column|
@@ -30,7 +29,7 @@ module ActiveWindow
 
     # The original object for +iter+.
     def get_object(iter)
-      iter[ self.class.id[:object] ]
+      iter[ self.class.column_id[:object] ]
     end
 
     # Add +object+ to tree, give optional +parent+
@@ -42,7 +41,7 @@ module ActiveWindow
       else
         update_iter_from_object iter, object
       end
-      iter[ self.class.id[:object] ] = object
+      iter[ self.class.column_id[:object] ] = object
       iter
     end
 
@@ -51,7 +50,7 @@ module ActiveWindow
       each do |model,path,iter| 
         if iter[OBJECT] == object
           data_columns.each do |column|
-            set_value(iter, column.id, column.data_value(object))
+            set_value(iter, column.column_id, column.data_value(object))
           end
           break
         end
@@ -66,7 +65,7 @@ module ActiveWindow
     end
     def update_iter_from_hash(iter, hash = {})
       hash.symbolize_keys.each do |key,value|
-        if id = self.class.id[key]
+        if id = self.class.column_id[key]
           iter[ id ] = value
         end
       end

@@ -54,10 +54,5 @@ class ActiveWindow::Controller
     application.send name, *args, &block
   end
 
-  private
-  def create_filtered_model(model, &block)
-    ActiveWindow::ActiveTreeStoreFilter.new(model, &block)
-  end
-
 end
 
