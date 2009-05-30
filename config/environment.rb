@@ -18,18 +18,17 @@ Config = VimMate::Config
 require_dependency 'gtk_thread_helper'
 require_dependency 'plugins'
 
-require_dependency 'signal'
+require_dependency 'active_window'
 
 %w(
   file_created file_modified file_deleted file_opened
   dir_created
-  item_opened item_removed item_refreshed
+  item_opened item_added item_removed item_refreshed
   file_opened
 ).each do |signal|
-  VimMate::Signal::define signal
+  ActiveWindow::Signal::define signal
 end
 
-require_dependency 'active_window'
 require_dependency 'vim_mate_controller'
 require_dependency 'vim_controller'
 require_dependency 'file_filter_controller'

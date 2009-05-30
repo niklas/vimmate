@@ -1,4 +1,4 @@
-module VimMate
+module ActiveWindow
   class Signal
     class UnknownSignalError < StandardError ; end
     @@signals = {}
@@ -14,6 +14,10 @@ module VimMate
           block.call(*args)
         end
       end
+    end
+
+    def self.signals
+      @@signals
     end
 
     def self.define name
