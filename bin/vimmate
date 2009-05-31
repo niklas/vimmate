@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-require File.join( File.dirname(__FILE__), '../config/environment' )
 # Parse the command line arguments
 require 'optparse'
 excludes = []
@@ -7,7 +6,7 @@ OptionParser.new do |opts|
   opts.banner = "Usage: #{File.basename($0)} [options] [files or directories]"
 
   opts.separator ""
-  opts.separator "VimMate #{VimMate::VERSION}: Vim graphical add-on"
+#  opts.separator "VimMate #{VimMate::VERSION}: Vim graphical add-on"
   opts.separator "Copyright (C) 2006 Guillaume Benny"
   opts.separator ""
   opts.separator "If files or directories are omitted, the current directory is shown"
@@ -39,6 +38,7 @@ end
 
 # We fork to give back the shell to the user, like Vim
 fork do
+  require File.join( File.dirname(__FILE__), '../config/environment' )
   Thread.abort_on_exception = true
 
   class VimMateApp < ActiveWindow::Application
