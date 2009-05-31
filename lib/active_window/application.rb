@@ -55,7 +55,7 @@ class ActiveWindow::Application
       # handler : window.close, which would call WindowController.close()
       # data    : nil
       #puts [source, target, signal, handler, data].inspect
-      source.signal_connect(signal) { self.dispatch(handler, :source => source, :target => target, :signal => signal, :handler => handler, :data => data) }
+      source.signal_connect(signal) { |widget,event| self.dispatch(handler, :source => source, :target => target, :signal => signal, :handler => handler, :data => data, :widget => widget, :event => event) }
       #source.signal_connect(signal) { self.(handler, data) }
     end
   end
