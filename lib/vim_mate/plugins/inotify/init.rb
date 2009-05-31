@@ -1,5 +1,4 @@
-VimMate::Requirer.require_if 'lib/INotify' do
-  require 'lib/directory'
-  VimMate::ListedDirectory.class_eval { include VimMate::Plugin::INotifyDirectory }
-end
+require_dependency 'lib/INotify'
+require_dependency 'lib/directory'
+ListedDirectory.class_eval { include VimMate::Plugin::INotifyDirectory }
 

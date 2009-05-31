@@ -71,5 +71,9 @@ module ActiveWindow
         end
       end
     end
+
+    def reference_for(iter)
+      Gtk::TreeRowReference.new(self, iter.path)
+    end
   end
 end

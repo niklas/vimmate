@@ -198,5 +198,9 @@ module INotify
 		def dump
 			"path: " + @path.to_s + ", filename: " + @filename.to_s + ", type: " + @type.to_s + ", cookie: " + @cookie.to_s
 		end
+
+      def to_s
+        dump
+      end
 	end
 end

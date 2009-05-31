@@ -17,12 +17,12 @@ class FileTreeStore < ActiveWindow::ActiveTreeStore
     set_sort_column_id self.class.column_id[:sort]
     ActiveWindow::Signal.on_file_modified { |path| refresh_path(path) }
     ActiveWindow::Signal.on_file_created  { |path| add_path(path)     }
-    ActiveWindow::Signal.on_file_deleted  { |path| destroy_path(path) }
+    ActiveWindow::Signal.on_file_deleted  { |path| remove_path(path)  }
   end
 
   def add_path(path, parent=nil)
-    file = ListedFile.create(:full_path => path)
-    unless excludes?(file.full_path)
+    unless excludes?(File.expand_path(path))
+      file = ListedFile.create(:full_path => path)
       iter = add file, parent || find_by_full_path( File.dirname(path) )
       if file.directory?
         file.children_paths.each do |child|
@@ -47,9 +47,17 @@ class FileTreeStore < ActiveWindow::ActiveTreeStore
     end
   end
 
-  def destroy_path(path)
-    if iter = find_by_full_path(path)
-      STDERR.puts "TODO: destroy #{iter}"
+  def remove_path(file_path)
+    if has_full_path?(file_path)
+      to_remove = []
+      each do |model,path,iter|
+        if iter[FULL_PATH].starts_with?(file_path)
+          to_remove << reference_for(iter)
+        end
+      end
+      to_remove.each do |element|
+        remove(get_iter(element.path))
+      end
     end
   end
 

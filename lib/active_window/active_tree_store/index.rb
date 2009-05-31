@@ -19,13 +19,16 @@ module ActiveWindow
             find_#{by}(val) || raise("cannot find by #{column}: '\#{val}'")
           end
           def find_#{by}(val)
-            if ref = index_#{by}[val]
+            if ref = has_#{column}?(val)
               self.get_iter(ref.path)
             end
           end
+          def has_#{column}?(val)
+            index_#{by}[val]
+          end
           def remember_iter_#{by}(iter)
             val = iter[ self.class.column_id[:#{column}] ]
-            index_#{by}[val] = Gtk::TreeRowReference.new(self, iter.path)
+            index_#{by}[val] = reference_for(iter)
           end
           def index_#{by}
             @index_#{by} ||= {}
