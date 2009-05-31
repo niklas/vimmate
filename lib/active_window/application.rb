@@ -88,7 +88,7 @@ class ActiveWindow::Application
     end
     
     method = ctrl.method(action)
-    puts "calling %s.%s" % [controller_name.camelize, action]
+    #puts "calling %s.%s" % [controller_name.camelize, action]
     if method.arity == 0
       method.call
     else
