@@ -52,6 +52,9 @@ fork do
     def files
       controller[:file_filter]
     end
+    def vim
+      controller[:vim].vim
+    end
     def add_path(path)
       file_tree.add_path(path)
     end

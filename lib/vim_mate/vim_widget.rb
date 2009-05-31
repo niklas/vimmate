@@ -78,7 +78,7 @@ module VimMate
         raise "Unknow open kind: #{kind}"
       end
       remote_send "<ESC><ESC><ESC>:buffer #{path}<CR>"
-      focus_vim
+      focus!
       #Signal.emit_file_opened(path)
       self
     end
@@ -89,7 +89,7 @@ module VimMate
         sleep 0.5
       end
       send_command buffer, 'setDot', [lnum,0]
-      focus_vim
+      focus!
       self
     end
     
@@ -116,7 +116,7 @@ module VimMate
     end
 
     # Set the focus to Vim
-    def focus_vim
+    def focus!
       @gtk_socket.can_focus = true
       @gtk_socket.has_focus = true
     end
