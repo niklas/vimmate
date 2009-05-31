@@ -4,14 +4,9 @@ module ActiveWindow
   #  * for iteration in TreeController
   #  * as object in ActiveTreeStore
   class ListedItem
-    attr_reader :iter
-    attr_reader :tree
-
 
     def initialize(opts = {})
       @traversed = false
-      @iter = opts[:iter]
-      @tree = opts[:tree]
       self
     end
 

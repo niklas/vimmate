@@ -1,56 +1,5 @@
   class FileTreeController < ActiveWindow::FilteredTreeWidget
 
-    def refresh(path=nil)
-      Thread.new do
-        each do |item|
-          if path.nil? || item.full_path.start_with?(path)
-            Gtk.queue do
-              item.refresh 
-            end
-          end
-        end
-      end
-    end
-
-    def has_path? file_path
-      !file_path.nil? && references.has_key?(file_path) && references[file_path]
-    end
-
-    def item_for(something)
-      case something
-      when String
-        if has_path?(something)
-          item_for references[something]
-        else
-          raise "unknown path: #{something}"
-        end
-      else
-        super(something)
-      end
-    end
-
-
-    private
-    # Filter tree view so only directories and separators with matching
-    # elements are set visible
-    # FIXME make threadsave
-    def applying_filter(model,path,iter)
-      if iter[ActiveWindow::ListedItem.referenced_type_column] == 'ListedFile'
-        if iter_visible_through_filter? iter
-          @found_count += 1
-          item_for(iter).show!
-        else
-          iter[ActiveWindow::ListedItem.visible_column] = false
-        end
-      else
-        iter[ActiveWindow::ListedItem.visible_column] = false if iter.path
-      end
-    end
-
-    after_filter_applied :expand_all_if_wanted
-    def expand_all_if_wanted
-      view.expand_all if filtering? and Config[:files_auto_expand_on_filter]
-    end
 
     private
     def iter_visible_through_filter?(iter)
@@ -79,16 +28,6 @@
           Regexp.escape(t).split(//).join('.*') 
         }.join('.*/.*')
       )
-    end
-
-    def created_item(item)
-      if item.iter.path.depth == 2
-        view.expand_row(item.iter.parent.path, false)
-      end
-    end
-
-    def removed_item(item)
-      references.delete(item.full_path)
     end
 
   end
