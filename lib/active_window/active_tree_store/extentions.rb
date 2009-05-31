@@ -29,7 +29,9 @@ module ActiveWindow
     end
 
     # The original object for +iter+.
+    # FIXME remove
     def get_object(iter)
+      raise "depricated - please use iter[OBJECT]"
       iter[ self.class.column_id[:object] ]
     end
 
@@ -61,6 +63,7 @@ module ActiveWindow
       data_columns.each do |column|
         iter[column.id] = column.data_value(object)
       end
+      iter
     end
     def update_iter_from_hash(iter, hash = {})
       hash.symbolize_keys.each do |key,value|
@@ -68,6 +71,7 @@ module ActiveWindow
           iter[ id ] = value
         end
       end
+      iter
     end
 
     def reference_for(iter)
