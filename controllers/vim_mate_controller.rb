@@ -3,8 +3,8 @@ class VimMateController < ActiveWindow::Controller
   attr_accessor :vim, :terminals_window, :tags_tree
 
   def post_setup
-    window.set_default_size( Config[:window_width],
-                             Config[:window_height])
+    window.set_default_size( VimMate::Config[:window_width],
+                             VimMate::Config[:window_height])
     window.set_icon_list(VimMate::Icons.window_icons)
 
 

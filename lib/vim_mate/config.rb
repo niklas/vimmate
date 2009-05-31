@@ -130,4 +130,3 @@ module VimMate
     end
   end
 end
-

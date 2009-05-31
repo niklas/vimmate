@@ -12,9 +12,9 @@ class FileFilterController < ActiveWindow::Controller
     file_tree_view.headers_visible = VimMate::Config[:file_headers_visible]
     file_tree_view.hover_selection = VimMate::Config[:file_hover_selection]
 
-    tree_scroller.set_size_request(Config[:files_opened_width], -1)
-    files_filter_button.active = Config[:files_filter_active]
-    files_pane.position = Config[:files_search_separator_position]
+    tree_scroller.set_size_request(VimMate::Config[:files_opened_width], -1)
+    files_filter_button.active = VimMate::Config[:files_filter_active]
+    files_pane.position = VimMate::Config[:files_search_separator_position]
   end
 
   # TODO find another poace to put
@@ -31,17 +31,17 @@ class FileFilterController < ActiveWindow::Controller
       filter_string = files_filter_term.text
 
       if filtered_file_tree.filter_string.blank? && filter_string.length == 1 # begin of filtering
-        save_expands if Config[:files_auto_expand_on_filter]
+        save_expands if VimMate::Config[:files_auto_expand_on_filter]
       end
 
       filtered_file_tree.filter = filter_string
 
-      if Config[:files_auto_expand_on_filter]
+      if VimMate::Config[:files_auto_expand_on_filter]
         filter_string.blank? ? restore_expands : expand_all
       end
     else
       filtered_file_tree.clear_filter
-      restore_expands if Config[:files_auto_expand_on_filter]
+      restore_expands if VimMate::Config[:files_auto_expand_on_filter]
     end
   end
   alias_method :toggle, :changed
@@ -63,7 +63,7 @@ class FileFilterController < ActiveWindow::Controller
     end
 
     def restore_expands
-      file_tree_view.collapse_all if Config[:files_auto_expand_on_filter]
+      file_tree_view.collapse_all if VimMate::Config[:files_auto_expand_on_filter]
       unless @expands.nil? || @expands.empty?
         @expands.each do |path|
           file_tree_view.expand_row(path, false)
