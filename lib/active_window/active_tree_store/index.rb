@@ -39,6 +39,11 @@ module ActiveWindow
             iter
           end
           alias_method_chain :add, :index_#{by}
+          def remove_with_index_#{by}(iter)
+            index_#{by}.delete iter[ self.class.column_id[:#{column}] ]
+            remove_without_index_#{by}(iter)
+          end
+          alias_method_chain :remove, :index_#{by}
         EOCODE
       end
     end
