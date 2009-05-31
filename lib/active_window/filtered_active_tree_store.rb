@@ -16,8 +16,13 @@ module ActiveWindow
       unfiltered_class = unfiltered_class_name.constantize
       child_class.columns = unfiltered_class.columns
       child_class.column_id = unfiltered_class.column_id
+      child_class.setup_column_id_constants
     rescue NameError => e
-      raise "there is no class named #{unfiltered_class} to filter from"
+      if e.message =~ /uninitialized constant #{unfiltered_class}/
+        raise "there is no class named #{unfiltered_class} to filter from"
+      else
+        raise
+      end
     end
 
     def initialize(child_model)

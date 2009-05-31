@@ -77,6 +77,12 @@ module ActiveWindow
         def column_classes
           columns.map(&:data_class)
         end
+
+        def setup_column_id_constants
+          column_id.each do |sym, index|
+            const_set sym.to_s.upcase, index
+          end
+        end
     end
   end
 end

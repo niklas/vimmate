@@ -219,6 +219,15 @@ describe ActiveWindow::ActiveTreeStore do
       ComplexTree.should have_at_least(2).invisible_columns
     end
 
+    it "should have 2 data columns" do
+      ComplexTree.should have_at_least(2).data_columns
+    end
+
+    it "should have constants for column ids" do
+      ComplexTree::NAME.should == 2
+      ComplexTree::AGE.should == 3
+    end
+
     it "should have max 1 visible column (the composite one)" do
       names = ComplexTree.visible_columns.map(&:name)
       names.should == ['Name and Age']
@@ -247,6 +256,11 @@ describe ActiveWindow::ActiveTreeStore do
 
       it "should take its columns from ComplexTree" do
         FilteredComplexTree.columns.should == ComplexTree.columns
+      end
+
+      it "should take constants for the column ids from ComplexTrr" do
+        FilteredComplexTree::NAME.should == 2
+        FilteredComplexTree::AGE.should == 3
       end
 
       describe "instancing it with a model" do
