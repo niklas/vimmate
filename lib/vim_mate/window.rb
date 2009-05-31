@@ -21,12 +21,6 @@ module VimMate
       open_file_in_vim row
     end
 
-    def open_file_popup(row, *args)
-      if row.file_or_directory?
-        file_popup.popup(nil, nil, 0, 0)
-      end
-    end
-
     # Set the focus to the file filter
     def focus_file_filter
       files_filter_term.has_focus = true

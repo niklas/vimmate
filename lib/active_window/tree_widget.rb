@@ -12,20 +12,6 @@ module ActiveWindow
       initialize_columns
       run_callbacks :after_initialize
     end
-    def selected_row
-      if iter = view.selection.selected
-        item_for iter
-      end
-    end
-
-    def on_row_activated(&block)
-      view.signal_connect("row-activated") do |view, path, column|
-        if row = selected_row
-          block.call row, view, path, column
-        end
-      end
-    end
-
     def on_right_click
       view.signal_connect("button_press_event") do |widget, event|
         if event.kind_of? Gdk::EventButton and event.button == 3

@@ -6,9 +6,21 @@ class VimController < ActiveWindow::Controller
     main_pane.pack2(vim.window, true, false)
   end
 
-  def open_selected_file(args={})
+  def open_selected_file
+    open_selected_file_as
+  end
+
+  def open_selected_file_split
+    open_selected_file_as :split
+  end
+
+  def open_selected_file_tab
+    open_selected_file_as :tab
+  end
+
+  private
+  def open_selected_file_as(mode = VimMate::Config[:files_default_open_in_tabs] ? :tab : :open)
     if iter = file_tree_view.selection.selected
-      mode = VimMate::Config[:files_default_open_in_tabs] ? :tab : :open
       vim.open iter[ FileTreeStore.full_path_column ], mode
     end
   end

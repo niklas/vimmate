@@ -75,6 +75,7 @@
                               <widget class="GtkTreeView" id="FileTreeView">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
+                                <signal name="button_press_event" handler="file_filter.button_pressed"/>
                                 <signal name="row_activated" handler="vim.open_selected_file"/>
                               </widget>
                             </child>
@@ -226,7 +227,7 @@
         <property name="use_underline">True</property>
         <property name="use_stock">True</property>
         <property name="always_show_image">True</property>
-        <signal name="activate" handler="on_open_file_clicked"/>
+        <signal name="activate" handler="vim.open_selected_file"/>
       </widget>
     </child>
     <child>
@@ -234,7 +235,7 @@
         <property name="visible">True</property>
         <property name="label" translatable="yes">Split Open</property>
         <property name="use_underline">True</property>
-        <signal name="activate" handler="on_split_open_file_clicked"/>
+        <signal name="activate" handler="vim.open_selected_file_split"/>
       </widget>
     </child>
     <child>
@@ -242,7 +243,7 @@
         <property name="visible">True</property>
         <property name="label" translatable="yes">Tab Open</property>
         <property name="use_underline">True</property>
-        <signal name="activate" handler="on_tab_open_file_clicked"/>
+        <signal name="activate" handler="vim.open_selected_file_tab"/>
       </widget>
     </child>
     <child>
