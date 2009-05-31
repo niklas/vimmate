@@ -50,9 +50,7 @@ module ActiveWindow
     def refresh(object)
       each do |model,path,iter| 
         if iter[OBJECT] == object
-          data_columns.each do |column|
-            set_value(iter, column.column_id, column.data_value(object))
-          end
+          update_iter_from_object(iter, object)
           break
         end
       end
