@@ -22,7 +22,6 @@ module ActiveWindow
         def add_with_filter_visibility(file, *args)
           iter = add_without_filter_visibility(file, *args)
           filtered_model.set_visibility_for(iter)
-          puts "fixed visibility for \#{iter[2]} (\#{iter[0]})"
           filtered_model.refilter
           iter
         end
