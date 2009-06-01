@@ -31,7 +31,7 @@ if File.exists?(local_ignore_file)
   File.open(local_ignore_file) do |f|
     while line = f.gets 
       line.chomp!.strip!
-      excludes << line unless line.blank?
+      excludes << line unless line.empty?
     end
   end
 end
