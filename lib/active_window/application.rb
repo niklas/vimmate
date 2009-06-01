@@ -115,7 +115,7 @@ class ActiveWindow::Application
   end
 
   def views_directory
-    File.expand_path File.join(File.dirname($0), '..', 'views')
+    File.join(APP_ROOT, 'views')
   end
 
   def define_widget_readers
