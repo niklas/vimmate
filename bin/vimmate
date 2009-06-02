@@ -59,7 +59,9 @@ fork do
       controller[:vim].vim
     end
     def add_path(path)
-      file_tree.add_path(path)
+      file_tree.initial_adding do
+        file_tree.add_path(path)
+      end
     end
 
     def post_setup

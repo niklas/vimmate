@@ -26,7 +26,7 @@ class FileTreeStore < ActiveWindow::ActiveTreeStore
       iter = add file, parent || find_by_full_path( File.dirname(path) )
       if file.directory?
         file.children_paths.each do |child|
-          add_path child, iter
+          add_path(child, iter)
         end
       end
     end

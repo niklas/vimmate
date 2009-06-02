@@ -22,7 +22,7 @@ module ActiveWindow
         def add_with_filter_visibility(file, *args)
           iter = add_without_filter_visibility(file, *args)
           filtered_model.set_visibility_for(iter)
-          filtered_model.refilter
+          filtered_model.refilter unless initial_add_in_progress?
           iter
         end
         alias_method_chain :add, :filter_visibility
