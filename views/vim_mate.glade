@@ -257,7 +257,7 @@
         <property name="visible">True</property>
         <property name="use_underline">True</property>
         <property name="use_stock">True</property>
-        <signal name="activate" handler="on_new_file_clicked"/>
+        <signal name="activate" handler="file_popup_menu.new_file"/>
       </widget>
     </child>
     <child>

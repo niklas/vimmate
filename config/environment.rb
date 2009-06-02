@@ -30,3 +30,4 @@ end
 require_dependency 'vim_mate_controller'
 require_dependency 'vim_controller'
 require_dependency 'file_filter_controller'
+require_dependency 'file_popup_menu_controller'

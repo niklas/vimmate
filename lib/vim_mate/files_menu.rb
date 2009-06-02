@@ -28,32 +28,6 @@ module VimMate
   # The pop-up menu used in the file tree
   class FilesMenu
 
-    # TODO make inline renaming
-    # Open a dialog to enter a new file name to create
-    def menu_new
-      dialog = Gtk::FileChooserDialog.new("New file",
-                                          @parent_window.gtk_window,
-                                          Gtk::FileChooser::ACTION_SAVE,
-                                          nil,
-                                          [Gtk::Stock::CANCEL, Gtk::Dialog::RESPONSE_CANCEL],
-                                          [Gtk::Stock::SAVE, Gtk::Dialog::RESPONSE_ACCEPT])
-      dialog.set_icon_list(Icons.window_icons)
-      dialog.current_folder = if File.directory? @last_path
-                                @last_path
-                              else
-                                File.dirname(@last_path)
-                              end
-      if dialog.run == Gtk::Dialog::RESPONSE_ACCEPT
-        begin
-          FileUtils.touch(dialog.filename)
-        rescue
-          $stderr.puts "Cannot touch #{dialog.filename}"
-        end
-      end
-      dialog.destroy
-      menu_refresh
-    end
-
     # Open a dialog to enter a new folder name to create
     def menu_new_folder
       dialog = Gtk::FileChooserDialog.new("New folder",
