@@ -26,7 +26,7 @@ class FileFilterController < ActiveWindow::Controller
       selected_path_label.text = ""
     end
   end
-  def changed
+  def filter
     if files_filter_button.active?
       filter_string = files_filter_term.text
 
@@ -44,7 +44,23 @@ class FileFilterController < ActiveWindow::Controller
       restore_expands if VimMate::Config[:files_auto_expand_on_filter]
     end
   end
+
+  def changed
+    stop_filter_timer
+    @filter_timer = GLib::Timeout.add(500) { filter; false }
+  end
   alias_method :toggle, :changed
+
+  def stop_filter_timer
+    if @filter_timer
+      if GLib::Source.respond_to?(:remove)
+        GLib::Source.remove(@filter_timer)
+      else
+        Gtk.timeout_remove(@filter_timer)
+      end
+      @filter_timer = nil
+    end
+  end
 
   def expand_all
     file_tree_view.expand_all
