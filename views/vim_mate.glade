@@ -206,6 +206,24 @@
                 <property name="type">tab</property>
               </packing>
             </child>
+            <child>
+              <widget class="GtkVBox" id="FilesBox">
+                <property name="visible">True</property>
+                <property name="orientation">vertical</property>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="ConfigTabs">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Conf</property>
+                <property name="angle">90</property>
+              </widget>
+              <packing>
+                <property name="position">1</property>
+                <property name="tab_fill">False</property>
+                <property name="type">tab</property>
+              </packing>
+            </child>
           </widget>
           <packing>
             <property name="resize">False</property>
