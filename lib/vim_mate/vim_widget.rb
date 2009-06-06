@@ -70,6 +70,7 @@ module VimMate
       case kind
       when :split
         remote_send '<ESC><ESC><ESC>:split<CR>'
+        exec_gvim "--remote '#{path}'"
       when :open, :split
         exec_gvim "--remote '#{path}'"
       when :tab
