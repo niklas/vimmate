@@ -38,10 +38,7 @@ end
 
 # We fork to give back the shell to the user, like Vim
 fork do
-  # TODO set this in activewindow.. but how?
-  APP_ROOT = File.expand_path( File.join( File.dirname(__FILE__), '..'  ) )
-  PROGRAM_NAME = 'vim_mate'
-  require File.join( APP_ROOT, 'config/environment' )
+  require File.expand_path( File.join( File.dirname(__FILE__), '..', 'config', 'environment'  ) )
   Thread.abort_on_exception = true
 
   class VimMateApp < ActiveWindow::Application
