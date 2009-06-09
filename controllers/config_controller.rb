@@ -15,7 +15,6 @@ class ConfigController < ActiveWindow::Controller
     VimMate::Config::DEFAULT_CONFIG.keys.each do |key|
       unless (new_val = val_of(key)).nil?
         VimMate::Config.config[key] = new_val
-        puts "saving #{key} => #{new_val}"
       end
     end
     VimMate::Config.write_config
@@ -25,6 +24,7 @@ class ConfigController < ActiveWindow::Controller
   def reset_settings
     boxes.each(&:destroy)
     setup
+    config_window.show_all
   end
 
   def open_window
