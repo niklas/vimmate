@@ -12,7 +12,7 @@ class FilteredFileTreeStore < ActiveWindow::FilteredActiveTreeStore
     end
   end
 
-  def filter_string=(new_filter_string)
+  def filter=(new_filter_string)
     @filter_regexp = nil
     @filter_column = nil
     super
@@ -28,7 +28,7 @@ class FilteredFileTreeStore < ActiveWindow::FilteredActiveTreeStore
   end
 
   def filter_column
-    @filter_column ||= filter_string =~ %r~/~ ? FULL_PATH : NAME
+    @filter_column ||= filter_string.index('/') ? FULL_PATH : NAME
   end
 
 end
