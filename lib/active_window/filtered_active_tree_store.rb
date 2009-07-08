@@ -42,7 +42,6 @@ module ActiveWindow
     end
 
     def filter_string=(new_filter_string)
-      @filter_regexp = nil
       if new_filter_string.empty?
         clear_filter
       else
