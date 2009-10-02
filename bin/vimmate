@@ -81,6 +81,14 @@ fork do
         end
       end
     end
+
+    def run
+      GLib::Timeout.add_seconds(2) do
+        vim.start
+        false
+      end
+      super
+    end
   end
 
   app = VimMateApp.new(:title => 'VimMate', :main_window => 'VimMate', :excludes => excludes)

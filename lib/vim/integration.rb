@@ -3,6 +3,7 @@ require 'socket'
 module Vim
   module Integration
 
+    Executable = 'gvim'
     Password = 'donthasslethehoff'
 
     include Buffers
@@ -25,8 +26,9 @@ module Vim
       end
     end
 
-    def exec_gvim(command)
-      `gvim --servername #{@vim_server_name} #{command}`
+    def exec_gvim(cmd)
+      command = %Q[#{Executable} --servername #{@vim_server_name} #{cmd}]
+      `#{command}`
     end
 
     def remote_send(command)

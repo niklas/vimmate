@@ -106,6 +106,7 @@ module VimMate
     # will contain Vim is visible.
     def start
       return if @vim_started
+      return unless @gtk_socket
       @vim_started = true
       listen
       fork do
