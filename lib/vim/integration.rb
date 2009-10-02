@@ -28,7 +28,7 @@ module Vim
 
     def exec_gvim(cmd)
       command = %Q[#{Executable} --servername #{@vim_server_name} #{cmd}]
-      `#{command}`
+      system(command)
     end
 
     def remote_send(command)
