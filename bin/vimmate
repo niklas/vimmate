@@ -91,6 +91,9 @@ fork do
     end
   end
 
+  icon_path = File.join(  File.dirname(__FILE__), '..', 'images', 'vimmate48.png'  )
+  Gtk::Window.set_default_icon(icon_path)
+
   app = VimMateApp.new(:title => 'VimMate', :main_window => 'VimMate', :excludes => excludes)
   app.start
 
