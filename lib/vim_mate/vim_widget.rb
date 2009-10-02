@@ -110,10 +110,9 @@ module VimMate
       @vim_started = true
       listen
       fork do
-        exec_gvim "--socketid #{@gtk_socket.id} -nb:localhost:#{port}:#{Password}"
+        exec %Q[#{Executable} --servername #{@vim_server_name} --socketid #{@gtk_socket.id} -nb:localhost:#{port}:#{Password}]
       end
-      sleep 0.5
-      source_vimmate_extras
+      #source_vimmate_extras
       self
     end
 

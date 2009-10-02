@@ -83,7 +83,7 @@ fork do
     end
 
     def run
-      GLib::Timeout.add_seconds(2) do
+      GLib::Timeout.add(23) do
         vim.start
         false
       end
