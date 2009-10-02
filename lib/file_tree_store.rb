@@ -56,7 +56,8 @@ class FileTreeStore < ActiveWindow::ActiveTreeStore
         end
       end
       to_remove.each do |element|
-        remove(get_iter(element.path))
+        i = get_iter(element.path)
+        remove(i) if i
       end
     end
   end
