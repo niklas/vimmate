@@ -45,7 +45,6 @@ module VimMate
       @gtk_socket.can_focus = true
       @gtk_socket.has_focus = true
       @vim_started = false
-      @extras_sourced = false
     end
 
     # The "window" for this object
@@ -53,14 +52,8 @@ module VimMate
       @gtk_socket
     end
 
-    #generate multiline functions that will be sourced on startup
-    def source_vimmate_extras
-      return if @extras_sourced
-      if @vim_started
-        source_path = File.join( File.dirname(__FILE__), '..', 'vim', 'source.vim')
-        remote_send "<ESC><ESC><ESC>:source #{source_path}<CR>"
-        @extras_sourced = true
-      end
+    def extras_source_path
+      File.join( File.dirname(__FILE__), '..', 'vim', 'source.vim')
     end
 
     # Open the specified file in Vim
@@ -110,9 +103,8 @@ module VimMate
       @vim_started = true
       listen
       fork do
-        exec %Q[#{Executable} --servername #{@vim_server_name} --socketid #{@gtk_socket.id} -nb:localhost:#{port}:#{Password}]
+        exec %Q[#{Executable} --servername #{@vim_server_name} --socketid #{@gtk_socket.id} -nb:localhost:#{port}:#{Password} -S #{extras_source_path}]
       end
-      #source_vimmate_extras
       self
     end
 
