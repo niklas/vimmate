@@ -12,7 +12,7 @@ begin
     }
     gemspec.email =       %q{niklas+vimmate@lanpartei.de}
     gemspec.homepage =    %q{http://github.com/niklas/vimmate/}
-    gemspec.authors =     ["Niklas Hofer", "Stefan Bethge"]
+    gemspec.authors =     ["Guillaume Benny", "Niklas Hofer", "Stefan Bethge"]
     gemspec.executables = %w{vimmate}
     gemspec.require_paths = ["lib"]
 
