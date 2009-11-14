@@ -22,6 +22,8 @@
 
     def children_paths
       children_names.map {|n| File.join(full_path, n)}
+    rescue Errno::ENOENT, Errno::EACCES
+      []
     end
 
     def children_names
@@ -35,7 +37,7 @@
         children_paths.each do |file_path|
           tree << file_path
         end
-      rescue Errno::ENOENT
+      rescue Errno::ENOENT, Errno::EACCES
       end
       @traversed = true
     end

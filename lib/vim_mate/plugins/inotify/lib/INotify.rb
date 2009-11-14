@@ -140,6 +140,8 @@ module INotify
 			end
 			
 			return wd
+      rescue Errno::EACCES => e
+        STDERR.puts e.message
 		end
 
 		def ignore_dir (dir)
