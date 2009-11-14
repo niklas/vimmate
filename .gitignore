@@ -2,3 +2,4 @@
 *.swo
 log/
 pkg/
+vimmate.gemspec
