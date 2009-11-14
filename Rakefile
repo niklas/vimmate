@@ -25,6 +25,7 @@ require 'rubygems'
 require 'rake'
 
 require './lib/vim_mate/version.rb'
-load './tasks/gem.rake'
+Dir["#{File.dirname(__FILE__)}/tasks/*.rake"].sort.each { |tasks| load tasks }
 
 task :default => :install
+
