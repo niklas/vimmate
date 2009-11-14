@@ -24,7 +24,7 @@ SOFTWARE.
 require 'rake/gempackagetask'
 require 'rake/rdoctask'
 
-require './lib/vimmatelib/version.rb'
+require './lib/vim_mate/version.rb'
 
 task :default => :package
 
