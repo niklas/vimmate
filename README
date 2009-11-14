@@ -51,11 +51,10 @@ To install:
   {VimMate's homepage}[http://vimmate.rubyforge.org/].
 - You now have 3 choices to install VimMate: manually, with Ruby Gems or with
   <tt>setup.rb</tt>:
-  - With Ruby Gems
-    - Simply run <tt>gem install VimMate</tt> .
-  - With <tt>setup.rb</tt>
-    - Simply run <tt>ruby setup.rb</tt> . Run <tt>ruby setup.rb --help</tt> for
-      more information.
+  - With Ruby Gems from GemCutter
+    - Simply run <tt>gem install vimmate --source http://gemcutter.org</tt> .
+  - Build the gem by yourself
+    - Simply run <tt>rake install</tt>
   - Manually
     - Copy the file <tt>bin/vimmate</tt> and the directory
       <tt>lib/vimmatelib</tt> to a directory somewhere in your path.
