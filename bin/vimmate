@@ -18,6 +18,10 @@ OptionParser.new do |opts|
     excludes = list
   end
 
+  opts.on_tail('-w', '--no-detach', 'Do not return to the terminal') do
+    @do_not_detach = true
+  end
+
   opts.on_tail("-h", "--help", "Show this help screen") do |string|
     puts opts
     exit
@@ -36,8 +40,7 @@ if File.exists?(local_ignore_file)
   end
 end
 
-# We fork to give back the shell to the user, like Vim
-fork do
+starting = lambda do
   require File.expand_path( File.join( File.dirname(__FILE__), '..', 'config', 'environment'  ) )
   Thread.abort_on_exception = true
 
@@ -103,3 +106,8 @@ fork do
 
 end
 
+if @do_not_detach
+  starting.call
+else
+  fork { starting.call }
+end
