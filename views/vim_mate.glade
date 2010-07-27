@@ -78,11 +78,13 @@
                                 <property name="can_focus">True</property>
                                 <property name="hscrollbar_policy">automatic</property>
                                 <property name="vscrollbar_policy">automatic</property>
+                                <signal name="drag_drop" handler="drag_drop"/>
                                 <child>
                                   <widget class="GtkTreeView" id="FileTreeView">
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <signal name="button_press_event" handler="file_filter.button_pressed"/>
+                                    <signal name="drag_drop" handler="file_filter.drag_drop"/>
                                     <signal name="row_activated" handler="vim.open_selected_file"/>
                                   </widget>
                                 </child>
