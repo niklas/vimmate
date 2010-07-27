@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'activesupport'
+require 'active_support'
 
 
 APP_ROOT = File.expand_path( File.join( File.dirname(__FILE__), '..'  ) )
