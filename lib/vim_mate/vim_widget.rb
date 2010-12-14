@@ -97,13 +97,15 @@ module VimMate
 
     # Start Vim's window. This must be called after the window which
     # will contain Vim is visible.
+    # FIXME disabled netbeans, crashes to often
     def start
       return if @vim_started
       return unless @gtk_socket
       @vim_started = true
       listen
       fork do
-        exec %Q[#{Executable} --servername #{@vim_server_name} --socketid #{@gtk_socket.id} -nb:localhost:#{port}:#{Password} -S #{extras_source_path}]
+        #exec %Q[#{Executable} --servername #{@vim_server_name} --socketid #{@gtk_socket.id} -nb:localhost:#{port}:#{Password} -S #{extras_source_path}]
+        exec %Q[#{Executable} --servername #{@vim_server_name} --socketid #{@gtk_socket.id} -S #{extras_source_path}]
       end
       self
     end

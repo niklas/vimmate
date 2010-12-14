@@ -2,19 +2,29 @@ class ActiveWindow::Application
   include ActiveSupport::Callbacks
   define_callbacks :after_initialize
 
-  attr_accessor :controller, :database, :glade, :window
+  attr_accessor :controller, :database, :window
+  attr_reader :builder
+
+  def self.widget(*widgets)
+    widgets.each do |widget|
+      name = widget.to_s.camelize
+      define_method widget do
+        builder[name]
+      end
+    end
+  end
   
   def widget(name)
-    glade[name]
+    builder[name]
   end
   
   def initialize(options = {})
-    @glade = GladeXML.new(find_glade, nil, options[:title] || 'application' )
+    @builder = Gtk::Builder.new
+    @builder.add_from_file(find_view)
     @window = widget(options[:main_window] || 'main_window')
     @window.signal_connect("destroy") { Gtk.main_quit }
-    @dot_file_prefs = DotFile.read
+    @dot_file_prefs = ActiveWindow::DotFile.read
     @database = options[:database]
-    define_widget_readers
     run_callbacks :after_initialize
   end
 
@@ -49,18 +59,11 @@ class ActiveWindow::Application
        name = klass.to_s.sub('Controller','').underscore.to_sym # eg MyFirstController -> :my_first
        controller[name] = ctrl
     end
-    
-    glade.signal_autoconnect_full do |source, target, signal, handler, data|
-      # for example:
-      # source  : instance of Gtk::ImageMenuItem
-      # target  : nil
-      # signal  : activate, clicked, pressed, etc.
-      # handler : window.close, which would call WindowController.close()
-      # data    : nil
-      #puts [source, target, signal, handler, data].inspect
-      source.signal_connect(signal) { |widget,event| self.dispatch(handler, :source => source, :target => target, :signal => signal, :handler => handler, :data => data, :widget => widget, :event => event) }
-      #source.signal_connect(signal) { self.(handler, data) }
+
+    builder.connect_signals do |handler_name|
+      dispatch(handler_name)
     end
+
     post_setup
   end
   
@@ -71,10 +74,10 @@ class ActiveWindow::Application
     end
   end
   
+  ## gets a handler like "config.reset_settings"
+  ## returns the method (reset_settings) of the controller (ConfigController) to use as a callback
   ##
-  ## dispatch a signal to the correct controller
-  ##
-  def dispatch(handler, event)
+  def dispatch(handler)
     controller_name,action = handler.to_s.split('.')
     unless controller_name and action
       return(error "cannot parse handler '%s'" % handler)
@@ -92,12 +95,6 @@ class ActiveWindow::Application
     end
     
     method = ctrl.method(action)
-    #puts "calling %s.%s" % [controller_name.camelize, action]
-    if method.arity == 0
-      method.call
-    else
-      method.call(event)
-    end
   end
 
 
@@ -111,27 +108,16 @@ class ActiveWindow::Application
     puts msg
   end
   
-  def find_glade
-    Dir.glob("#{views_directory}/*.glade") do |f|
+  # TODO find the *.ui file according to app name or whatever
+  def find_view
+    Dir.glob("#{views_directory}/*.ui") do |f|
       return f
     end
-    raise "could not find a .glade file in #{views_directory}"
+    raise "could not find a .ui file in #{views_directory}"
   end
 
   def views_directory
     File.join(APP_ROOT, 'views')
   end
 
-  def define_widget_readers
-    glade.widget_names.each do |widget|
-      meth = widget.underscore
-      instance_eval <<-EOEVAL
-        @#{meth} = glade['#{widget}']
-        def #{meth}
-          @#{meth}
-        end
-      EOEVAL
-    end
-  end
-  
 end

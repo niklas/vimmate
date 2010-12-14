@@ -1,4 +1,4 @@
-require_dependency 'lib/INotify'
-require_dependency 'lib/directory'
+require 'lib/INotify'
+require 'lib/directory'
 ListedDirectory.class_eval { include VimMate::Plugin::INotifyDirectory }
 

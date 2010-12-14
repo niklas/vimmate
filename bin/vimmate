@@ -44,55 +44,10 @@ starting = lambda do
   require File.expand_path( File.join( File.dirname(__FILE__), '..', 'config', 'environment'  ) )
   Thread.abort_on_exception = true
 
-  class VimMateApp < ActiveWindow::Application
-    def initialize(opts={})
-      @excludes = opts.delete(:excludes)
-      super
-    end
-    def file_tree
-      files.file_tree
-    end
-    def files
-      controller[:file_filter]
-    end
-    def vim
-      controller[:vim].vim
-    end
-    def add_path(path)
-      file_tree.initial_adding do
-        file_tree.add_path(path)
-      end
-    end
-
-    def post_setup
-      super
-
-      @excludes.each do |rule|
-        file_tree.exclude! rule
-      end unless @excludes.blank?
-
-      # If there are no files given, open an empty window
-      # If files are specified on the command line, use them
-      ARGV.each do |file|
-        path = File.expand_path(file)
-        add_path(path)
-        #window.vim.open(path, :tab)
-      end
-    end
-
-    def run
-      GLib::Timeout.add(23) do
-        vim.start
-        false
-      end
-      super
-    end
-  end
-
   icon_path = File.join(  File.dirname(__FILE__), '..', 'images', 'vimmate48.png'  )
   Gtk::Window.set_default_icon(icon_path)
 
-  app = VimMateApp.new(:title => 'VimMate', :main_window => 'VimMate', :excludes => excludes)
+  app = VimMate::App.new(:title => 'VimMate', :main_window => 'VimMate', :excludes => excludes)
   app.start
 
 

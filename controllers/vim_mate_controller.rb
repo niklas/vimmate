@@ -28,8 +28,7 @@ class VimMateController < ActiveWindow::Controller
     #end
   end
 
-  def pressed_key(given)
-    return unless event = given[:event]
+  def pressed_key(given, event)
     if event.state & Gdk::Window::ModifierType::CONTROL_MASK != 0
       if event.state & Gdk::Window::ModifierType::SHIFT_MASK != 0
         case event.keyval

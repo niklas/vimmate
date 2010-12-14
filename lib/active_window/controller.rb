@@ -1,5 +1,4 @@
-# require 'libglade2'
-# require 'gtk2'
+require 'singleton'
 
 class ActiveWindow::Controller
   include Singleton

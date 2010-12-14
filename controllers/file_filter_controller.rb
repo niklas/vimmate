@@ -71,8 +71,7 @@ class FileFilterController < ActiveWindow::Controller
     file_tree_view.expand_row(Gtk::TreePath.new("0"), false)
   end
 
-  def button_pressed(given)
-    event = given[:event]
+  def button_pressed(given, event)
     if event.kind_of? Gdk::EventButton and event.button == 3
       path = file_tree_view.get_path_at_pos(event.x, event.y)
       file_tree_view.selection.select_path(path[0]) if path
