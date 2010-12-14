@@ -20,10 +20,7 @@ require 'lib/vim'
 require 'lib/vim_mate'
 
 
-#require 'vimmatelib/file_tree_view'
 require 'gtk_thread_helper'
-
-require 'active_window'
 
 %w(
   file_created file_modified file_deleted file_opened
