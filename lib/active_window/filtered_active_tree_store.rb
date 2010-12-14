@@ -12,6 +12,16 @@ module ActiveWindow
     define_callbacks :before_filter_applied, :after_filter_applied
     define_callbacks :before_clear_filter, :after_clear_filter
 
+  # BETTER:
+  #
+  # class FilteredFileStore < ActiveTreeStore.filter 
+  #   returns new anonymous class which inherits from Gtk::TreeModelFilter 
+  #  we can inherit from -- like Struct.new
+  #  .filter is a class method the ActiveTreeStore got extended with
+  # end 
+  # the #add stuff down there we could replace with GTK's signals
+  #   =>
+
     def self.inherited(child_class)
       unfiltered_class_name = child_class.name.sub(/^Filtered/,'')
       unfiltered_class = unfiltered_class_name.constantize
@@ -53,6 +63,7 @@ module ActiveWindow
     def clear_filter
       run_callbacks :before_clear_filter
       @filter_string = ''
+      @filtering = false
       @found_count = -1
       refilter
       run_callbacks :after_clear_filter
@@ -65,8 +76,11 @@ module ActiveWindow
 
     # Iterate over child model and set visible column according to #iter_visible?
     def apply_filter
+      @filtering = true
       run_callbacks :before_filter_applied
       @found_count = 0
+      # we could traverse the tree for ourself with #first_iter and TreeIter#next! and #parent,
+      # setting visid to true/false accordingly => less method calls, better control
       child_model.each do |model,path,iter|
         set_visibility_for(iter)
       end
@@ -75,35 +89,41 @@ module ActiveWindow
     end
 
     def filtered?
-      !filter_string.blank?
+      @filtering
     end
     alias_method :filter, :filter_string
     alias_method :filter=, :filter_string=
     alias_method :filtering?, :filtered?
 
     def set_visibility_for(iter)
-      visid = self.class.column_id[:visible]
-      unless filtering?
-        iter[ visid ] = true
-      else
+      visid = visibility_column
+      vis = true
+      if filtering?
         if iter_visible?(iter) # iter matches - mark it and all parents as visible
           @found_count += 1
-          iter[ visid ] = true
+          vis = true
           i = iter
           while i = i.parent
             i[ visid ] = true
           end
         else
-          iter[ visid ] = false
+          vis = false
         end
       end
+      iter[ visid ] = vis
+      iter
+    end
+
+    def visibility_column
+      self.class.column_id[:visible]
     end
 
     private
 
     def setup_filter
+      visid = visibility_column
       set_visible_func do |model, iter|
-        !filtered? || iter[ self.class.column_id[:visible] ]
+        !filtering? || iter[ visid ]
       end
       child_model.filtered_model = self
       clear_filter
