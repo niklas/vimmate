@@ -20,6 +20,10 @@ begin
     # TODO docs would be nice, indeed
     gemspec.has_rdoc = false
 
+    gemspec.add_dependency 'gtk2', '>= 0.90.5'
+    gemspec.add_dependency 'i18n', '>= 0.5.0'
+    gemspec.add_dependency 'activesupport', '>= 3.0.3'
+
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
