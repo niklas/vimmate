@@ -1,0 +1,35 @@
+PATH
+  remote: .
+  specs:
+    vimmate (0.9.1)
+      activesupport (>= 3.0.3)
+      gtk2 (>= 0.90.5)
+      i18n (>= 0.5.0)
+
+GEM
+  remote: http://rubygems.org/
+  specs:
+    activesupport (3.0.7)
+    atk (0.90.8)
+      glib2 (>= 0.90.8)
+    cairo (1.10.0)
+      pkg-config
+    gdk_pixbuf2 (0.90.8)
+      glib2 (>= 0.90.8)
+    glib2 (0.90.8)
+      pkg-config
+    gtk2 (0.90.8)
+      atk (>= 0.90.8)
+      gdk_pixbuf2 (>= 0.90.8)
+      pango (>= 0.90.8)
+    i18n (0.5.0)
+    pango (0.90.8)
+      cairo (>= 1.10.0)
+      glib2 (>= 0.90.8)
+    pkg-config (1.1.1)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  vimmate!

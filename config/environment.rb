@@ -3,11 +3,8 @@ require 'rubygems'
 APP_ROOT = File.expand_path( File.join( File.dirname(__FILE__), '..'  ) )
 PROGRAM_NAME = 'vim_mate'
 
-require 'gtk2'
-require 'i18n' # activesupport needs this
-require 'active_support'
+# for reverse_merge!
 require 'active_support/core_ext/object'
-require 'yaml'# for DotFile
 
 $:.unshift APP_ROOT
 

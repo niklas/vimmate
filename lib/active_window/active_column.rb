@@ -1,3 +1,4 @@
+require 'gtk2'
 module ActiveWindow
 
 =begin
@@ -8,7 +9,6 @@ ActiveColumn is used to define columns for ActiveTreeStore
 
   class ActiveColumn 
     attr_accessor :id, :name
-    extend ActiveSupport::Memoizable
 
     ClassesToSymbols = {
       TrueClass     => :boolean,
