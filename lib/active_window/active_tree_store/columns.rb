@@ -2,10 +2,10 @@ module ActiveWindow
   module ActiveTreeStoreColumns
       def self.included(base)
         base.class_eval do
-          class_inheritable_accessor :column_id
-          write_inheritable_attribute :column_id, {}
-          class_inheritable_accessor :columns
-          write_inheritable_attribute :columns, []
+          class_attribute :column_id
+          self.column_id =  {}
+          class_attribute :columns
+          self.columns =  []
           include InstanceMethods
           extend ClassMethods
         end

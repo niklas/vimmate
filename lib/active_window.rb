@@ -1,3 +1,4 @@
+require 'active_support/callbacks'
 module ActiveWindow
 end
 

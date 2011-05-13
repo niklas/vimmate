@@ -4,7 +4,7 @@ APP_ROOT = File.expand_path( File.join( File.dirname(__FILE__), '..'  ) )
 PROGRAM_NAME = 'vim_mate'
 
 # for reverse_merge!
-require 'active_support/core_ext/object'
+require 'active_support/core_ext'
 
 $:.unshift APP_ROOT
 
